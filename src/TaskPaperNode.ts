@@ -97,8 +97,8 @@ export class TaskPaperNode {
 
         // check children
         if (!match && this.children !== undefined) {
-            match = this.children?.some((childnode) =>
-                childnode.containsItem(nodeToMatch)
+            match = this.children?.some((childNode) =>
+                childNode.containsItem(nodeToMatch)
             );
         }
         return match;
@@ -109,7 +109,7 @@ export class TaskPaperNode {
     }
 
     private matches(nodeToMatch: TaskPaperNode): boolean {
-        // TODO: is this enought to a match?
+        // TODO: is this enough to do the match?
         return (
             this.type === "task" &&
             this.value === nodeToMatch.value &&
