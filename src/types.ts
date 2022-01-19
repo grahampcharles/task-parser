@@ -9,5 +9,4 @@ export type TaskPaperNodeOld = {
 export type TaskPaperIndex = {
     line: number;
     column: number;
-    offset: number;
 };

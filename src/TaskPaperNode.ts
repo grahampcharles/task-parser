@@ -1,22 +1,101 @@
 import { TagWithValue } from "./TagWithValue";
+import { parseTaskPaperNodeType, TaskPaperNodeType } from "./TaskPaperNodeType";
 import { TaskPaperIndex } from "./types";
 
+const project = /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)/;
+const task = /(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/;
+const taskWithTags = /(?:.*- )(.*)/;
+const indent = /^([ \t]*)(?:[^\s].*)/;
+const tags = /(?:[^@\n]*[ \t]+)(@.*)/;
+
+export function parseTaskPaperNode(input: string, lineNumber: number) {
+    const type = getNodeType(input);
+    const depth = getNodeDepth(input);
+    const value = getNodeValue(input);
+    const tags = getNodeTags(input);
+}
+
+export function getNodeTags(input: string): string {
+    if (nodeIsProject(input) || nodeIsTask(input)) {
+        return (tags.exec(input) || ["", ""])[1];
+    }
+    return "";
+}
+
+export function getNodeValue(input: string): string {
+    if (nodeIsDocument(input)) {
+        return "";
+    }
+    if (nodeIsProject(input)) {
+        return (project.exec(input) || ["", ""])[1];
+    }
+    if (nodeIsTask(input)) {
+        // TODO: fix trimEnd kludge
+        return (task.exec(input) || ["", ""])[1].trimEnd();
+    }
+
+    if (nodeIsNote(input)) {
+        return input.trimStart();
+    }
+
+    return "";
+}
+
+export function getNodeDepth(input: string): number {
+    if (nodeIsDocument(input)) {
+        return 0;
+    }
+
+    return (
+        Math.floor(
+            (input.match(indent) || ["", ""])[1].replace(/\t/g, "  ").length / 2
+        ) + 1
+    );
+}
+
+export function getNodeType(input: string): TaskPaperNodeType {
+    if (nodeIsDocument(input)) return "document";
+    if (nodeIsProject(input)) return "project";
+    if (nodeIsTask(input)) return "task";
+    if (nodeIsNote(input)) return "note";
+    return "unknown";
+}
+export function nodeIsDocument(input: string): boolean {
+    return input.indexOf("\r") !== -1 || input.indexOf("\n") !== -1;
+}
+export function nodeIsProject(input: string): boolean {
+    // task is precedent
+    if (nodeIsTask(input) || nodeIsDocument(input)) {
+        return false;
+    }
+    return input.match(project) === null ? false : true;
+}
+export function nodeIsTask(input: string): boolean {
+    if (nodeIsDocument(input)) {
+        return false;
+    }
+    return input.match(task) === null ? false : true;
+}
+export function nodeIsNote(input: string): boolean {
+    if (input.trim().length === 0) {
+        return false;
+    }
+    return !(
+        nodeIsDocument(input) ||
+        nodeIsProject(input) ||
+        nodeIsTask(input)
+    );
+}
+
 export class TaskPaperNode {
-    type: string;
+    type: TaskPaperNodeType;
     value?: string;
     children?: TaskPaperNode[];
-    tags?: string[];
-    tagsParsed?: TagWithValue[];
+    tags?: TagWithValue[];
     depth: number;
     index: TaskPaperIndex;
 
-    constructor(v: TaskPaperNode | string) {
-        if (typeof v === "string") {
-            this.type = v;
-            this.depth = 0;
-            this.index = { line: 0, column: 0 } as TaskPaperIndex;
-            return;
-        }
+    constructor(v: TaskPaperNode) {
         this.type = v.type;
         this.value = v.value;
         this.tags = v.tags;
@@ -25,16 +104,11 @@ export class TaskPaperNode {
         this.children = v.children?.map((child) => {
             return new TaskPaperNode(child);
         });
-
-        // parse tags into tag, value pairs
-        this.tagsParsed = this.tags?.map((tag) => {
-            return new TagWithValue(tag);
-        });
     }
 
     toString(exceptTags?: string[]): string {
         const tags =
-            this.tagsParsed
+            this.tags
                 ?.filter(
                     (tag) =>
                         !exceptTags?.some((exceptTag) => tag.tag === exceptTag)
@@ -43,14 +117,14 @@ export class TaskPaperNode {
                 .join(" ") || "";
         const prefix = `\t`.repeat(this.depth - 1);
 
-        return `${prefix}- ${this.value} ${tags}`.trimRight();
+        return `${prefix}- ${this.value} ${tags}`.trimEnd();
     }
 
     tagValue(tagName: string): string | undefined {
         if (this.hasTag(tagName)) {
             return (
-                this.tagsParsed?.filter((tag) => tag.tag === tagName)[0]
-                    .value || undefined
+                this.tags?.filter((tag) => tag.tag === tagName)[0].value ||
+                undefined
             );
         }
         return undefined;
@@ -60,24 +134,21 @@ export class TaskPaperNode {
         if (typeof tagNames === "string") {
             tagNames = [tagNames];
         }
-        return (
-            this.tagsParsed?.some((tag) => tagNames.includes(tag.tag)) ?? false
-        );
+        return this.tags?.some((tag) => tagNames.includes(tag.tag)) ?? false;
     }
 
     setTag(tagName: string, tagValue: string): void {
-        if (this.tagsParsed === undefined) {
-            this.tagsParsed = [new TagWithValue(tagName, tagValue)];
+        if (this.tags === undefined) {
+            this.tags = [new TagWithValue(tagName, tagValue)];
             return;
         }
-        const index = this.tagsParsed.findIndex((tag) => tag.tag === tagName);
+        const index = this.tags.findIndex((tag) => tag.tag === tagName);
         if (index === -1) {
             // this doesn't push a TagWithValue
-            this.tagsParsed.push(new TagWithValue(tagName, tagValue));
+            this.tags.push(new TagWithValue(tagName, tagValue));
             return;
         }
-        this.tagsParsed[index].value = tagValue;
-        this.updateTags();
+        this.tags[index].value = tagValue;
     }
 
     removeTag(tagName: string | string[]): void {
@@ -87,9 +158,7 @@ export class TaskPaperNode {
             });
             return;
         }
-
-        this.tagsParsed = this.tagsParsed?.filter((tag) => tag.tag !== tagName);
-        this.updateTags();
+        this.tags = this.tags?.filter((tag) => tag.tag !== tagName);
     }
 
     containsItem(nodeToMatch: TaskPaperNode): boolean {
@@ -115,14 +184,5 @@ export class TaskPaperNode {
             this.value === nodeToMatch.value &&
             this.tagValue("due") === nodeToMatch.tagValue("due")
         );
-    }
-
-    private updateTags(): void {
-        this.tags = this.tagsParsed?.map((tag) => {
-            if (tag.value === undefined) {
-                return tag.tag;
-            }
-            return `${tag.tag}(${tag.value})`;
-        });
     }
 }
