@@ -1,18 +1,12 @@
-import { hello } from "../src/index";
+import { ParseTaskPaper } from "../src/index";
 import { expect } from "chai";
 import "mocha";
+import { todoSimple } from "./testSource";
 
-describe("Setting up testing", function () {
-    it("What is the 'it' for?", () => {
-        expect(1).to.equal(1);
-    });
-    it("This is another change!", () => {
-        expect(1).to.equal(1);
-    });
-    it("Does hello do what I want?", () => {
-        expect(hello()).to.equal("Hello, world");
-    });
-    it("Is hello a function?", () => {
-        expect(typeof hello).to.equal("function");
+describe("entry point", function () {
+    it("parse wrapper", () => {
+        const result = ParseTaskPaper(todoSimple);
+        expect(result.type).to.eql("document");
+        expect(result.depth).to.eql(0);
     });
 });
