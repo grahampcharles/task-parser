@@ -1,4 +1,4 @@
-// NOTE: not using Enum to improve JSON readability
+// using string instead of Enum to improve JSON readability
 export type TaskPaperNodeType =
     | "unknown"
     | "document"
