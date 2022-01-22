@@ -3,8 +3,9 @@
     "version": "1.0.3",
     "description": "A task parser.",
     "main": "build/index.js",
+    "types": "build/types.js",
     "scripts": {
-        "build": "rimraf './build' && tsc",
+        "build": "rimraf './build' && tsc --declaration",
         "start": "npm run build && ts-node 'build/index.js'",
         "dev": "nodemon",
         "test": "mocha -r ts-node/register 'tests/**/*.ts'"
