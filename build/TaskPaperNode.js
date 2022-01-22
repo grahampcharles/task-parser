@@ -127,9 +127,13 @@ var TaskPaperNode = /** @class */ (function () {
                     if (nodeIsRootProject(line)) {
                         var endIndex = lines_1
                             .slice(index + 1)
-                            .findIndex(function (line) { return nodeIsRootProject(line); });
+                            .findIndex(function (innerLine) {
+                            return nodeIsRootProject(innerLine);
+                        });
                         var newNode = new TaskPaperNode(lines_1
-                            .slice(index, endIndex === -1 ? undefined : endIndex)
+                            .slice(index, endIndex === -1
+                            ? undefined
+                            : endIndex + index + 1)
                             .join("\n"), lineNumber + index + 1 // one-based line numbers
                         );
                         _this.children.push(newNode);
