@@ -9,6 +9,9 @@
         "dev": "nodemon",
         "test": "mocha -r ts-node/register 'tests/**/*.ts'"
     },
+    "files": [
+        "build/**/*"
+    ],
     "author": "grahampcharles",
     "license": "ISC",
     "devDependencies": {
