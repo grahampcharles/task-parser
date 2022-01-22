@@ -14,7 +14,7 @@ import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";
 import { todoSimple, todoSingleProject } from "./testSource";
-import { TagWithValue } from "../src/TagWithValue";
+import { testLongSource } from "./testThreeProjectSource";
 
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
@@ -339,6 +339,24 @@ describe("TaskPaperNode parsing", () => {
                     loc.value
                 );
             });
+        });
+
+        it("three-project document", () => {
+            const longishDocument = new TaskPaperNode(testLongSource);
+
+            expect(longishDocument.children).to.have.lengthOf(3);
+            expect(longishDocument).to.have.nested.property(
+                "children[1].children[2].value",
+                "item #4"
+            );
+            expect(longishDocument).to.have.nested.property(
+                "children[1].children[3].tags[1].value",
+                "2022-11-01"
+            );
+            expect(longishDocument).to.have.nested.property(
+                "children[1].children[4].tags[0].tag",
+                "recur"
+            );
         });
     });
 });

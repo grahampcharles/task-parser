@@ -135,12 +135,16 @@ export class TaskPaperNode {
                     if (nodeIsRootProject(line)) {
                         const endIndex = lines
                             .slice(index + 1)
-                            .findIndex((line) => nodeIsRootProject(line));
+                            .findIndex((innerLine) =>
+                                nodeIsRootProject(innerLine)
+                            );
                         const newNode = new TaskPaperNode(
                             lines
                                 .slice(
                                     index,
-                                    endIndex === -1 ? undefined : endIndex
+                                    endIndex === -1
+                                        ? undefined
+                                        : endIndex + index + 1
                                 )
                                 .join("\n"),
                             lineNumber + index + 1 // one-based line numbers
