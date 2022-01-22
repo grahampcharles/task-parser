@@ -219,6 +219,20 @@ describe("TaskPaperNode parsing", () => {
                 "Test Project 1"
             );
             expect(simpleDocument).to.have.nested.property(
+                "children[0].index.line",
+                1
+            );
+
+            expect(simpleDocument).to.have.nested.property(
+                "children[1].value",
+                "Test Project 2"
+            );
+            expect(simpleDocument).to.have.nested.property(
+                "children[1].index.line",
+                8
+            );
+
+            expect(simpleDocument).to.have.nested.property(
                 "children[0].children[0].value",
                 "test item 1"
             );
@@ -260,6 +274,15 @@ describe("TaskPaperNode parsing", () => {
                 "children[0].children[2].tags[1].value",
                 "value"
             );
+
+            expect(simpleDocument).to.have.nested.property(
+                "children[0].children[3].type",
+                "project"
+            );
+            expect(simpleDocument).to.have.nested.property(
+                "children[0].children[3].value",
+                "Test SubProject 1"
+            );
         });
 
         it("single project document ", () => {
@@ -273,7 +296,9 @@ describe("TaskPaperNode parsing", () => {
             const tests: Array<testLocation> = [
                 { location: "children[0].type", value: "project" },
                 { location: "children[0].value", value: "Test Project 1" },
+                { location: "children[0].index.line", value: 1 },
                 { location: "children[0].children[0].type", value: "task" },
+                { location: "children[0].children[0].index.line", value: 2 },
                 {
                     location: "children[0].children[0].value",
                     value: "test item 1",

@@ -143,7 +143,7 @@ export class TaskPaperNode {
                                     endIndex === -1 ? undefined : endIndex
                                 )
                                 .join("\n"),
-                            this.type === "document" ? 1 : lineNumber + index
+                            lineNumber + index + 1 // one-based line numbers
                         );
                         this.children.push(newNode);
                     }
