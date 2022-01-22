@@ -10,7 +10,7 @@
         "test": "mocha -r ts-node/register 'tests/**/*.ts'"
     },
     "files": [
-        "src/**/*"
+        "build/**/*"
     ],
     "author": "grahampcharles",
     "license": "ISC",
