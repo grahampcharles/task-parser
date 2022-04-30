@@ -13,7 +13,7 @@ import {
 import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";
-import { todoSimple, todoSingleProject } from "./testSource";
+import { taskSimple, todoSimple, todoSingleProject } from "./testSource";
 import { testLongSource } from "./testThreeProjectSource";
 
 // Reference:  RegEx tests run at:
@@ -205,6 +205,14 @@ describe("TaskPaperNode parsing", () => {
     });
 
     describe("TaskPaperNode parsing", () => {
+        it("single task", () => {
+            const singleTask = new TaskPaperNode(taskSimple);
+            expect(singleTask).to.have.property("type", "task");
+            const tags = singleTask.tags;
+            expect(tags).to.have.lengthOf(2);
+            expect(singleTask.hasTag("due")).to.equal(true);
+        });
+
         it("simple document", () => {
             const simpleDocument = new TaskPaperNode(todoSimple);
             expect(simpleDocument).to.have.property("type", "document");
