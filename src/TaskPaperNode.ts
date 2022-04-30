@@ -115,8 +115,13 @@ export class TaskPaperNode {
 
     constructor(input: string | TaskPaperNode, lineNumber: number = 0) {
         if (typeof input === "string") {
-            // get document type
-            this.type = lineNumber === 0 ? "document" : getNodeType(input);
+            //// get node type
+            // special case: if this is line 0 of a multi-line node, it's a document
+            if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
+                this.type = "document";
+            } else {
+                this.type = getNodeType(input);
+            }
 
             // set property values, depending on type
             this.depth = this.type === "document" ? 0 : getNodeDepth(input);

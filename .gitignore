@@ -2,4 +2,3 @@ node_modules/
 coverage/
 nodemon.json
 .nyc_output
-build/
