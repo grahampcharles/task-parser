@@ -104,8 +104,8 @@ function nodeIsNote(input) {
 exports.nodeIsNote = nodeIsNote;
 var TaskPaperNode = /** @class */ (function () {
     function TaskPaperNode(input, lineNumber) {
-        var _this = this;
         if (lineNumber === void 0) { lineNumber = 0; }
+        var _this = this;
         var _a;
         this.children = new Array();
         if (typeof input === "string") {
@@ -142,6 +142,7 @@ var TaskPaperNode = /** @class */ (function () {
                             : endIndex + index + 1)
                             .join("\n"), lineNumber + index + 1 // one-based line numbers
                         );
+                        newNode.parent = _this;
                         _this.children.push(newNode);
                     }
                 });
@@ -155,6 +156,7 @@ var TaskPaperNode = /** @class */ (function () {
                         newNode.depth <= this.depth) {
                         break;
                     }
+                    newNode.parent = this;
                     this.children.push(newNode);
                     // update index to account for any consumed sub-children
                     index = newNode.lastLine() - lineNumber;
@@ -168,6 +170,7 @@ var TaskPaperNode = /** @class */ (function () {
         this.type = input.type;
         this.depth = input.depth;
         this.value = input.value;
+        this.parent = input.parent;
         this.tags = (_a = input.tags) === null || _a === void 0 ? void 0 : _a.map(function (tag) { return new TagWithValue_1.TagWithValue(tag.tag, tag.value); });
         this.index = { line: input.index.line, column: input.index.column };
         this.children = input.children.map(function (child) {
@@ -179,6 +182,16 @@ var TaskPaperNode = /** @class */ (function () {
             return this.children[this.children.length - 1].lastLine();
         }
         return this.index.line;
+    };
+    TaskPaperNode.prototype.parentProject = function () {
+        // step back through the tree to find the parent project
+        if (this.parent === undefined) {
+            return undefined;
+        }
+        if (this.parent.type === "project") {
+            return this.parent;
+        }
+        return this.parent.parentProject();
     };
     TaskPaperNode.prototype.toString = function (exceptTags) {
         var _a;

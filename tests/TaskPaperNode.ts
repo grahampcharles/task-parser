@@ -19,7 +19,8 @@ import { testLongSource } from "./testThreeProjectSource";
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
 // Task: https://regex101.com/r/3Uc5Yg/1
-describe("TaskPaperNode parsing", () => {
+
+describe("TaskPaperNode types, values", () => {
     it("node is Project", () => {
         expect(nodeIsProject("Test:")).to.equal(true);
         expect(nodeIsProject("Test:\n-item 1\nProject 2:\n")).to.equal(true);
@@ -203,168 +204,197 @@ describe("TaskPaperNode parsing", () => {
         expect(test1[1]).to.have.property("tag", "tag2");
         expect(test1[1]).to.have.property("value", "value");
     });
+});
 
-    describe("TaskPaperNode parsing", () => {
-        it("single task", () => {
-            const singleTask = new TaskPaperNode(taskSimple);
-            expect(singleTask).to.have.property("type", "task");
-            const tags = singleTask.tags;
-            expect(tags).to.have.lengthOf(2);
-            expect(singleTask.hasTag("due")).to.equal(true);
+describe("TaskPaperNode parent parsing", () => {
+    it("node parent analysis", () => {
+        // Test Project 1
+        const simpleDocument = new TaskPaperNode(todoSimple);
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[2].parent.value",
+            "Test Project 1"
+        );
+
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[3].children[0].parent.value",
+            "Test SubProject 1"
+        );
+
+        const testItem =
+            simpleDocument?.children[0]?.children[3]?.children[0] || undefined;
+        expect(testItem).to.not.be.undefined;
+
+        expect(simpleDocument)
+            .to.have.nested.property("children[0].children[3].children[0]")
+            .respondsTo("parentProject");
+
+        // top-level project should have undefined value (it's the document)
+        const firstItem = simpleDocument.children[0];
+        expect(firstItem).to.have.nested.property("parent.value").that.is
+            .undefined;
+    });
+});
+
+describe("TaskPaperNode parsing", () => {
+    it("single task", () => {
+        const singleTask = new TaskPaperNode(taskSimple);
+        expect(singleTask).to.have.property("type", "task");
+        const tags = singleTask.tags;
+        expect(tags).to.have.lengthOf(2);
+        expect(singleTask.hasTag("due")).to.equal(true);
+    });
+
+    it("simple document", () => {
+        const simpleDocument = new TaskPaperNode(todoSimple);
+        expect(simpleDocument).to.have.property("type", "document");
+        expect(simpleDocument.children).to.have.lengthOf(2);
+
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].type",
+            "project"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].value",
+            "Test Project 1"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].index.line",
+            1
+        );
+
+        expect(simpleDocument).to.have.nested.property(
+            "children[1].value",
+            "Test Project 2"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[1].index.line",
+            8
+        );
+
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[0].value",
+            "test item 1"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[1].value",
+            "test item 2"
+        );
+        expect(simpleDocument)
+            .to.have.nested.property("children[0].children[1].tags")
+            .with.lengthOf(1);
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[1].tags[0].tag",
+            "tag1"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[1].tags[0].value",
+            undefined
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[2].value",
+            "test item 3"
+        );
+        expect(simpleDocument)
+            .to.have.nested.property("children[0].children[2].tags")
+            .with.lengthOf(2);
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[2].tags[0].tag",
+            "tag1"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[2].tags[0].value",
+            undefined
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[2].tags[1].tag",
+            "tag2"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[2].tags[1].value",
+            "value"
+        );
+
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[3].type",
+            "project"
+        );
+        expect(simpleDocument).to.have.nested.property(
+            "children[0].children[3].value",
+            "Test SubProject 1"
+        );
+    });
+
+    it("single project document ", () => {
+        const singleProjectDocument = new TaskPaperNode(todoSingleProject);
+        expect(singleProjectDocument).to.have.property("type", "document");
+        expect(singleProjectDocument)
+            .to.have.property("children")
+            .with.lengthOf(1);
+
+        type testLocation = { location: string; value: any };
+        const tests: Array<testLocation> = [
+            { location: "children[0].type", value: "project" },
+            { location: "children[0].value", value: "Test Project 1" },
+            { location: "children[0].index.line", value: 1 },
+            { location: "children[0].children[0].type", value: "task" },
+            { location: "children[0].children[0].index.line", value: 2 },
+            {
+                location: "children[0].children[0].value",
+                value: "test item 1",
+            },
+            { location: "children[0].children[1].type", value: "task" },
+            {
+                location: "children[0].children[1].value",
+                value: "test item 2",
+            },
+            {
+                location: "children[0].children[1].tags[0].tag",
+                value: "tag1",
+            },
+            {
+                location: "children[0].children[1].tags[0].value",
+                value: undefined,
+            },
+            {
+                location: "children[0].children[2].tags[0].tag",
+                value: "tag1",
+            },
+            {
+                location: "children[0].children[2].tags[0].value",
+                value: undefined,
+            },
+            {
+                location: "children[0].children[2].tags[1].tag",
+                value: "tag2",
+            },
+            {
+                location: "children[0].children[2].tags[1].value",
+                value: "value",
+            },
+        ];
+        tests.forEach((loc: testLocation) => {
+            expect(singleProjectDocument).to.have.nested.property(
+                loc.location,
+                loc.value
+            );
         });
+    });
 
-        it("simple document", () => {
-            const simpleDocument = new TaskPaperNode(todoSimple);
-            expect(simpleDocument).to.have.property("type", "document");
-            expect(simpleDocument.children).to.have.lengthOf(2);
+    it("three-project document", () => {
+        const longishDocument = new TaskPaperNode(testLongSource);
 
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].type",
-                "project"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].value",
-                "Test Project 1"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].index.line",
-                1
-            );
-
-            expect(simpleDocument).to.have.nested.property(
-                "children[1].value",
-                "Test Project 2"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[1].index.line",
-                8
-            );
-
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[0].value",
-                "test item 1"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[1].value",
-                "test item 2"
-            );
-            expect(simpleDocument)
-                .to.have.nested.property("children[0].children[1].tags")
-                .with.lengthOf(1);
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[1].tags[0].tag",
-                "tag1"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[1].tags[0].value",
-                undefined
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[2].value",
-                "test item 3"
-            );
-            expect(simpleDocument)
-                .to.have.nested.property("children[0].children[2].tags")
-                .with.lengthOf(2);
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[2].tags[0].tag",
-                "tag1"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[2].tags[0].value",
-                undefined
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[2].tags[1].tag",
-                "tag2"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[2].tags[1].value",
-                "value"
-            );
-
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[3].type",
-                "project"
-            );
-            expect(simpleDocument).to.have.nested.property(
-                "children[0].children[3].value",
-                "Test SubProject 1"
-            );
-        });
-
-        it("single project document ", () => {
-            const singleProjectDocument = new TaskPaperNode(todoSingleProject);
-            expect(singleProjectDocument).to.have.property("type", "document");
-            expect(singleProjectDocument)
-                .to.have.property("children")
-                .with.lengthOf(1);
-
-            type testLocation = { location: string; value: any };
-            const tests: Array<testLocation> = [
-                { location: "children[0].type", value: "project" },
-                { location: "children[0].value", value: "Test Project 1" },
-                { location: "children[0].index.line", value: 1 },
-                { location: "children[0].children[0].type", value: "task" },
-                { location: "children[0].children[0].index.line", value: 2 },
-                {
-                    location: "children[0].children[0].value",
-                    value: "test item 1",
-                },
-                { location: "children[0].children[1].type", value: "task" },
-                {
-                    location: "children[0].children[1].value",
-                    value: "test item 2",
-                },
-                {
-                    location: "children[0].children[1].tags[0].tag",
-                    value: "tag1",
-                },
-                {
-                    location: "children[0].children[1].tags[0].value",
-                    value: undefined,
-                },
-                {
-                    location: "children[0].children[2].tags[0].tag",
-                    value: "tag1",
-                },
-                {
-                    location: "children[0].children[2].tags[0].value",
-                    value: undefined,
-                },
-                {
-                    location: "children[0].children[2].tags[1].tag",
-                    value: "tag2",
-                },
-                {
-                    location: "children[0].children[2].tags[1].value",
-                    value: "value",
-                },
-            ];
-            tests.forEach((loc: testLocation) => {
-                expect(singleProjectDocument).to.have.nested.property(
-                    loc.location,
-                    loc.value
-                );
-            });
-        });
-
-        it("three-project document", () => {
-            const longishDocument = new TaskPaperNode(testLongSource);
-
-            expect(longishDocument.children).to.have.lengthOf(3);
-            expect(longishDocument).to.have.nested.property(
-                "children[1].children[2].value",
-                "item #4"
-            );
-            expect(longishDocument).to.have.nested.property(
-                "children[1].children[3].tags[1].value",
-                "2022-11-01"
-            );
-            expect(longishDocument).to.have.nested.property(
-                "children[1].children[4].tags[0].tag",
-                "recur"
-            );
-        });
+        expect(longishDocument.children).to.have.lengthOf(3);
+        expect(longishDocument).to.have.nested.property(
+            "children[1].children[2].value",
+            "item #4"
+        );
+        expect(longishDocument).to.have.nested.property(
+            "children[1].children[3].tags[1].value",
+            "2022-11-01"
+        );
+        expect(longishDocument).to.have.nested.property(
+            "children[1].children[4].tags[0].tag",
+            "recur"
+        );
     });
 });

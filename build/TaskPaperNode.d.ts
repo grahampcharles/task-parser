@@ -17,8 +17,10 @@ export declare class TaskPaperNode {
     tags?: TagWithValue[];
     depth: number;
     index: TaskPaperIndex;
+    parent: TaskPaperNode | undefined;
     constructor(input: string | TaskPaperNode, lineNumber?: number);
     lastLine(): number;
+    parentProject(): TaskPaperNode | undefined;
     toString(exceptTags?: string[]): string;
     tagValue(tagName: string): string | undefined;
     hasTag(tagNames: string | string[]): boolean;

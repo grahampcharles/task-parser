@@ -1,7 +1,6 @@
-import { listenerCount } from "process";
 import { firstLine, splitLines } from "./strings";
 import { TagWithValue } from "./TagWithValue";
-import { parseTaskPaperNodeType, TaskPaperNodeType } from "./TaskPaperNodeType";
+import { TaskPaperNodeType } from "./TaskPaperNodeType";
 import { TaskPaperIndex } from "./types";
 
 const topLevelProject = /^(?:[^\s]+.*)(?::)(?:.*)/gm;
@@ -112,6 +111,7 @@ export class TaskPaperNode {
     tags?: TagWithValue[];
     depth: number;
     index: TaskPaperIndex;
+    parent: TaskPaperNode | undefined;
 
     constructor(input: string | TaskPaperNode, lineNumber: number = 0) {
         if (typeof input === "string") {
@@ -154,6 +154,7 @@ export class TaskPaperNode {
                                 .join("\n"),
                             lineNumber + index + 1 // one-based line numbers
                         );
+                        newNode.parent = this;
                         this.children.push(newNode);
                     }
                 });
@@ -178,6 +179,7 @@ export class TaskPaperNode {
                         break;
                     }
 
+                    newNode.parent = this;
                     this.children.push(newNode);
 
                     // update index to account for any consumed sub-children
@@ -196,6 +198,7 @@ export class TaskPaperNode {
         this.type = input.type;
         this.depth = input.depth;
         this.value = input.value;
+        this.parent = input.parent;
         this.tags = input.tags?.map(
             (tag) => new TagWithValue(tag.tag, tag.value)
         );
@@ -210,6 +213,17 @@ export class TaskPaperNode {
             return this.children[this.children.length - 1].lastLine();
         }
         return this.index.line;
+    }
+
+    parentProject(): TaskPaperNode | undefined {
+        // step back through the tree to find the parent project
+        if (this.parent === undefined) {
+            return undefined;
+        }
+        if (this.parent.type === "project") {
+            return this.parent;
+        }
+        return this.parent.parentProject();
     }
 
     toString(exceptTags?: string[]): string {
