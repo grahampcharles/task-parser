@@ -15,6 +15,7 @@ import "mocha";
 import { it } from "mocha";
 import { taskSimple, todoSimple, todoSingleProject } from "./testSource";
 import { testLongSource } from "./testThreeProjectSource";
+import { join } from "path";
 
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
@@ -91,6 +92,10 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsNote("\t- Test")).to.equal(false);
         expect(nodeIsNote("This is a note.")).to.equal(true);
         expect(nodeIsNote("    This is an indented note.")).to.equal(true);
+    });
+
+    it("node is Unknown", () => {
+        expect(getNodeType("")).to.equal("unknown");
     });
 
     it("getNodeType", () => {
@@ -226,7 +231,7 @@ describe("TaskPaperNode parent parsing", () => {
 
         expect(simpleDocument)
             .to.have.nested.property("children[0].children[3].children[0]")
-            .respondsTo("parentProject");
+            .respondsTo("rootProject");
 
         // top-level project should have undefined value (it's the document)
         const firstItem = simpleDocument.children[0];
@@ -396,5 +401,33 @@ describe("TaskPaperNode parsing", () => {
             "children[1].children[4].tags[0].tag",
             "recur"
         );
+    });
+});
+
+describe("TaskPaperNode string conversion", () => {
+    it("toString simple", () => {
+        const simple = new TaskPaperNode(taskSimple).toString();
+        expect(simple).to.equal(taskSimple);
+    });
+
+    it("toString with children simple", () => {
+        const simple = new TaskPaperNode(taskSimple)
+            .toStringWithChildren()
+            .join("/n");
+        expect(simple).to.equal(taskSimple);
+    });
+
+    it("toString single project", () => {
+        const singleProject = new TaskPaperNode(todoSingleProject)
+            .toStringWithChildren()
+            .join("\n");
+        expect(singleProject).to.equal(todoSingleProject);
+    });
+
+    it("toString multiple projects", () => {
+        const document = new TaskPaperNode(todoSimple)
+            .toStringWithChildren()
+            .join("\n");
+        expect(document).to.equal(todoSimple);
     });
 });

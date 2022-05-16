@@ -188,9 +188,11 @@ export class TaskPaperNode {
             }
 
             // remove unknowns from children
-            this.children = this.children.filter(
-                (node) => node.type !== "unknown"
-            );
+            // removed: currently, blank lines are type=unknown, and we want to retain those
+            // could add blank lines to "note"?
+            // this.children = this.children.filter(
+            //     (node) => node.type !== "unknown"
+            // );
             return;
         }
 
@@ -215,18 +217,25 @@ export class TaskPaperNode {
         return this.index.line;
     }
 
-    parentProject(): TaskPaperNode | undefined {
-        // step back through the tree to find the parent project
+    rootProject(): TaskPaperNode | undefined {
+        // step back through the tree to find the root project
         if (this.parent === undefined) {
             return undefined;
         }
-        if (this.parent.type === "project") {
+        if (this.parent.type === "document") {
             return this.parent;
         }
-        return this.parent.parentProject();
+        return this.parent.rootProject();
     }
 
     toString(exceptTags?: string[]): string {
+        if (this.type === "document") {
+            return "";
+        }
+        if (this.type === "note" || this.type === "unknown") {
+            return this.value || "";
+        }
+
         const tags =
             this.tags
                 ?.filter(
@@ -235,9 +244,28 @@ export class TaskPaperNode {
                 )
                 .map((tag) => tag.toString())
                 .join(" ") || "";
-        const prefix = `\t`.repeat(this.depth - 1);
 
-        return `${prefix}- ${this.value} ${tags}`.trimEnd();
+        const prefix = this.depth > 1 ? `\t`.repeat(this.depth - 1) : "";
+        const mark = this.type === "task" ? "- " : "";
+        const endMark = this.type === "project" ? ":" : "";
+
+        return `${prefix}${mark}${this.value} ${tags}`
+            .trimEnd()
+            .concat(`${endMark}`);
+    }
+
+    toStringWithChildren(exceptTags?: string[]): string[] {
+        const results = new Array<string>();
+
+        if (this.type !== "document") {
+            results.push(this.toString());
+        }
+
+        this.children?.forEach((child) => {
+            results.push(...child.toStringWithChildren(exceptTags));
+        });
+
+        return results;
     }
 
     tagValue(tagName: string): string | undefined {
