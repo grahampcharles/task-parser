@@ -3,12 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskPaperNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
 var strings_1 = require("./strings");
 var TagWithValue_1 = require("./TagWithValue");
-var topLevelProject = /^(?:[^\s]+.*)(?::)(?:.*)/gm;
-var project = /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)/;
-var task = /^(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/;
-var taskWithTags = /(?:.*- )(.*)/;
-var indent = /^([ \t]*)(?:[^\s].*)/;
-var tags = /(?:[^@\n]*[ \t]+)(@.*)/;
+// regex for project: https://regex101.com/r/9et9l4/1
+var nodePatternMatches = {
+    topLevelProject: /^(?:[^\s]+.*)(?::)(?:.*)/gm,
+    project: /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)((?=[@].*)|$)/gm,
+    task: /^(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/,
+    taskWithTags: /(?:.*- )(.*)/,
+    indent: /^([ \t]*)(?:[^\s].*)/,
+    tags: /(?:[^@\n]*[ \t]+)(@.*)/,
+};
 /*
  * Parse non-empty tags from a node string.
  */
@@ -24,7 +27,7 @@ exports.getTagValueArray = getTagValueArray;
  */
 function getNodeTags(input) {
     if (nodeIsProject(input) || nodeIsTask(input)) {
-        return (tags.exec((0, strings_1.firstLine)(input)) || ["", ""])[1];
+        return (nodePatternMatches.tags.exec((0, strings_1.firstLine)(input)) || ["", ""])[1];
     }
     return "";
 }
@@ -34,11 +37,17 @@ exports.getNodeTags = getNodeTags;
  */
 function getNodeValue(input) {
     if (nodeIsProject(input)) {
-        return (project.exec((0, strings_1.firstLine)(input)) || ["", ""])[1];
+        return (nodePatternMatches.project.exec((0, strings_1.firstLine)(input)) || [
+            "",
+            "",
+        ])[1];
     }
     if (nodeIsTask(input)) {
         // TODO: fix trimEnd kludge
-        return (task.exec((0, strings_1.firstLine)(input)) || ["", ""])[1].trimEnd();
+        return (nodePatternMatches.task.exec((0, strings_1.firstLine)(input)) || [
+            "",
+            "",
+        ])[1].trimEnd();
     }
     if (nodeIsNote(input)) {
         return (0, strings_1.firstLine)(input).trimStart();
@@ -50,7 +59,7 @@ exports.getNodeValue = getNodeValue;
  * Extract depth from a node string.
  */
 function getNodeDepth(input) {
-    return (Math.floor((input.match(indent) || ["", ""])[1].replace(/\t/g, "  ").length / 2) + 1);
+    return (Math.floor((input.match(nodePatternMatches.indent) || ["", ""])[1].replace(/\t/g, "  ").length / 2) + 1);
 }
 exports.getNodeDepth = getNodeDepth;
 /*
@@ -74,7 +83,7 @@ function nodeIsProject(input) {
     if (nodeIsTask(input)) {
         return false;
     }
-    return input.match(project) === null ? false : true;
+    return input.match(nodePatternMatches.project) === null ? false : true;
 }
 exports.nodeIsProject = nodeIsProject;
 /*
@@ -89,7 +98,7 @@ exports.nodeIsRootProject = nodeIsRootProject;
  * Determine if node is a task.
  */
 function nodeIsTask(input) {
-    return input.match(task) === null ? false : true;
+    return input.match(nodePatternMatches.task) === null ? false : true;
 }
 exports.nodeIsTask = nodeIsTask;
 /*
@@ -202,16 +211,16 @@ var TaskPaperNode = /** @class */ (function () {
         if (this.type === "document") {
             return "";
         }
-        if (this.type === "note" || this.type === "unknown") {
-            return this.value || "";
-        }
+        // if (this.type === "note" || this.type === "unknown") {
+        //     return this.value || "";
+        // }
         var tags = ((_a = this.tags) === null || _a === void 0 ? void 0 : _a.filter(function (tag) {
             return !(exceptTags === null || exceptTags === void 0 ? void 0 : exceptTags.some(function (exceptTag) { return tag.tag === exceptTag; }));
         }).map(function (tag) { return tag.toString(); }).join(" ")) || "";
         var prefix = this.depth > 1 ? "\t".repeat(this.depth - 1) : "";
-        var mark = this.type === "task" ? "- " : "";
+        var startMark = this.type === "task" ? "- " : "";
         var endMark = this.type === "project" ? ":" : "";
-        return "".concat(prefix).concat(mark).concat(this.value, " ").concat(tags)
+        return "".concat(prefix).concat(startMark).concat(this.value, " ").concat(tags)
             .trimEnd()
             .concat("".concat(endMark));
     };

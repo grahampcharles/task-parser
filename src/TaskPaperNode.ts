@@ -244,9 +244,9 @@ export class TaskPaperNode {
         if (this.type === "document") {
             return "";
         }
-        if (this.type === "note" || this.type === "unknown") {
-            return this.value || "";
-        }
+        // if (this.type === "note" || this.type === "unknown") {
+        //     return this.value || "";
+        // }
 
         const tags =
             this.tags
@@ -258,10 +258,10 @@ export class TaskPaperNode {
                 .join(" ") || "";
 
         const prefix = this.depth > 1 ? `\t`.repeat(this.depth - 1) : "";
-        const mark = this.type === "task" ? "- " : "";
+        const startMark = this.type === "task" ? "- " : "";
         const endMark = this.type === "project" ? ":" : "";
 
-        return `${prefix}${mark}${this.value} ${tags}`
+        return `${prefix}${startMark}${this.value} ${tags}`
             .trimEnd()
             .concat(`${endMark}`);
     }

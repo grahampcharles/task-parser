@@ -161,6 +161,7 @@ describe("TaskPaperNode types, values", () => {
         expect(getNodeValue("\t\t- Test")).to.equal("Test");
 
         expect(getNodeValue("This is a note.")).to.equal("This is a note.");
+        expect(getNodeValue("Note: colon")).to.equal("Note: colon");
         expect(getNodeValue("  This is a note.")).to.equal("This is a note.");
         expect(getNodeValue("    This is an indented note.")).to.equal(
             "This is an indented note."
@@ -408,6 +409,13 @@ describe("TaskPaperNode parsing", () => {
 });
 
 describe("TaskPaperNode string conversion", () => {
+    it("toString notes", () => {
+        expect(new TaskPaperNode("Test Note").toString()).to.equal("Test Note");
+        expect(new TaskPaperNode("Note: Colon").toString()).to.equal(
+            "Note: Colon"
+        );
+    });
+
     it("toString simple", () => {
         const simple = new TaskPaperNode(taskSimple).toString();
         expect(simple).to.equal(taskSimple);

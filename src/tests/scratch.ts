@@ -1,8 +1,5 @@
 import { TaskPaperNode } from "../TaskPaperNode";
-import { todoSimple } from "./testSource";
 
-const document = new TaskPaperNode(todoSimple)
-    .toStringWithChildren()
-    .join("\n");
+const document = new TaskPaperNode(`\trunOnStart: true`);
 
-console.log(document);
+// console.log(document.toString());
