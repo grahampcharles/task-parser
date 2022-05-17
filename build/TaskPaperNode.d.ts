@@ -20,8 +20,9 @@ export declare class TaskPaperNode {
     parent: TaskPaperNode | undefined;
     constructor(input: string | TaskPaperNode, lineNumber?: number);
     lastLine(): number;
-    parentProject(): TaskPaperNode | undefined;
+    rootProject(): TaskPaperNode | undefined;
     toString(exceptTags?: string[]): string;
+    toStringWithChildren(exceptTags?: string[]): string[];
     tagValue(tagName: string): string | undefined;
     hasTag(tagNames: string | string[]): boolean;
     setTag(tagName: string, tagValue: string): void;

@@ -163,7 +163,11 @@ var TaskPaperNode = /** @class */ (function () {
                 }
             }
             // remove unknowns from children
-            this.children = this.children.filter(function (node) { return node.type !== "unknown"; });
+            // removed: currently, blank lines are type=unknown, and we want to retain those
+            // could add blank lines to "note"?
+            // this.children = this.children.filter(
+            //     (node) => node.type !== "unknown"
+            // );
             return;
         }
         // deep clone from existing
@@ -183,23 +187,44 @@ var TaskPaperNode = /** @class */ (function () {
         }
         return this.index.line;
     };
-    TaskPaperNode.prototype.parentProject = function () {
-        // step back through the tree to find the parent project
+    TaskPaperNode.prototype.rootProject = function () {
+        // step back through the tree to find the root project
         if (this.parent === undefined) {
             return undefined;
         }
-        if (this.parent.type === "project") {
+        if (this.parent.type === "document") {
             return this.parent;
         }
-        return this.parent.parentProject();
+        return this.parent.rootProject();
     };
     TaskPaperNode.prototype.toString = function (exceptTags) {
         var _a;
+        if (this.type === "document") {
+            return "";
+        }
+        if (this.type === "note" || this.type === "unknown") {
+            return this.value || "";
+        }
         var tags = ((_a = this.tags) === null || _a === void 0 ? void 0 : _a.filter(function (tag) {
             return !(exceptTags === null || exceptTags === void 0 ? void 0 : exceptTags.some(function (exceptTag) { return tag.tag === exceptTag; }));
         }).map(function (tag) { return tag.toString(); }).join(" ")) || "";
-        var prefix = "\t".repeat(this.depth - 1);
-        return "".concat(prefix, "- ").concat(this.value, " ").concat(tags).trimEnd();
+        var prefix = this.depth > 1 ? "\t".repeat(this.depth - 1) : "";
+        var mark = this.type === "task" ? "- " : "";
+        var endMark = this.type === "project" ? ":" : "";
+        return "".concat(prefix).concat(mark).concat(this.value, " ").concat(tags)
+            .trimEnd()
+            .concat("".concat(endMark));
+    };
+    TaskPaperNode.prototype.toStringWithChildren = function (exceptTags) {
+        var _a;
+        var results = new Array();
+        if (this.type !== "document") {
+            results.push(this.toString());
+        }
+        (_a = this.children) === null || _a === void 0 ? void 0 : _a.forEach(function (child) {
+            results.push.apply(results, child.toStringWithChildren(exceptTags));
+        });
+        return results;
     };
     TaskPaperNode.prototype.tagValue = function (tagName) {
         var _a;
