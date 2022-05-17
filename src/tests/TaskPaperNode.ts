@@ -85,6 +85,7 @@ describe("TaskPaperNode types, values", () => {
 
     it("node is Note", () => {
         expect(nodeIsNote("Test:\n-item 1")).to.equal(false);
+        expect(nodeIsNote("Test embedded colon: value")).to.equal(true);
         expect(nodeIsNote("Test:")).to.equal(false);
         expect(nodeIsNote("- Test:")).to.equal(false);
         expect(nodeIsNote("- Test @tag1, @tag2(value)")).to.equal(false);
