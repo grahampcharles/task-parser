@@ -1,6 +1,6 @@
 {
     "name": "task-parser",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "description": "A task parser.",
     "main": "build/index.js",
     "types": "build/types.js",
