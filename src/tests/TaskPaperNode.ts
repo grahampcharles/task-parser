@@ -9,7 +9,7 @@ import {
     nodeIsRootProject,
     nodeIsTask,
     TaskPaperNode,
-} from "../src/TaskPaperNode";
+} from "../TaskPaperNode";
 import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";

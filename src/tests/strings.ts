@@ -1,4 +1,4 @@
-import { firstLine, splitLines } from "../src/strings";
+import { firstLine, splitLines } from "../strings";
 import { expect } from "chai";
 import "mocha";
 

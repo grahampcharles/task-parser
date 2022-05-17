@@ -1,4 +1,4 @@
-import { parseTaskPaper } from "../src/index";
+import { parseTaskPaper } from "../index";
 import { expect } from "chai";
 import "mocha";
 import { todoSimple } from "./testSource";

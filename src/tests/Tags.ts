@@ -1,4 +1,4 @@
-import { Tags } from "../src/Tags";
+import { Tags } from "../Tags";
 import { expect } from "chai";
 import "mocha";
 
