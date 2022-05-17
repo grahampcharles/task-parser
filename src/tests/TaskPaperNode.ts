@@ -15,7 +15,6 @@ import "mocha";
 import { it } from "mocha";
 import { taskSimple, todoSimple, todoSingleProject } from "./testSource";
 import { testLongSource } from "./testThreeProjectSource";
-import { join } from "path";
 
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
@@ -26,6 +25,9 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsProject("Test:")).to.equal(true);
         expect(nodeIsProject("Test:\n-item 1\nProject 2:\n")).to.equal(true);
         expect(nodeIsProject("Test:\n-item 1")).to.equal(true);
+        expect(
+            nodeIsProject("Test: this is a note with a colon inside")
+        ).to.equal(false);
         expect(nodeIsProject("Test:    ")).to.equal(true, "spaces after");
         expect(nodeIsProject("\tTest:")).to.equal(true, "indented with tab");
         expect(nodeIsProject("  Test:")).to.equal(true, "indented with spaces");

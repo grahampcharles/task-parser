@@ -3,13 +3,16 @@ import { TagWithValue } from "./TagWithValue";
 import { TaskPaperNodeType } from "./TaskPaperNodeType";
 import { TaskPaperIndex } from "./types";
 
-const topLevelProject = /^(?:[^\s]+.*)(?::)(?:.*)/gm;
-const project = /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)/;
-const task = /^(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/;
-const taskWithTags = /(?:.*- )(.*)/;
-const indent = /^([ \t]*)(?:[^\s].*)/;
-const tags = /(?:[^@\n]*[ \t]+)(@.*)/;
+// regex for project: https://regex101.com/r/9et9l4/1
 
+const nodePatternMatches = {
+    topLevelProject: /^(?:[^\s]+.*)(?::)(?:.*)/gm,
+    project: /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)((?=[@].*)|$)/gm,
+    task: /^(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/,
+    taskWithTags: /(?:.*- )(.*)/,
+    indent: /^([ \t]*)(?:[^\s].*)/,
+    tags: /(?:[^@\n]*[ \t]+)(@.*)/,
+};
 /*
  * Parse non-empty tags from a node string.
  */
@@ -25,7 +28,7 @@ export function getTagValueArray(input: string): TagWithValue[] {
  */
 export function getNodeTags(input: string): string {
     if (nodeIsProject(input) || nodeIsTask(input)) {
-        return (tags.exec(firstLine(input)) || ["", ""])[1];
+        return (nodePatternMatches.tags.exec(firstLine(input)) || ["", ""])[1];
     }
     return "";
 }
@@ -35,11 +38,17 @@ export function getNodeTags(input: string): string {
  */
 export function getNodeValue(input: string): string {
     if (nodeIsProject(input)) {
-        return (project.exec(firstLine(input)) || ["", ""])[1];
+        return (nodePatternMatches.project.exec(firstLine(input)) || [
+            "",
+            "",
+        ])[1];
     }
     if (nodeIsTask(input)) {
         // TODO: fix trimEnd kludge
-        return (task.exec(firstLine(input)) || ["", ""])[1].trimEnd();
+        return (nodePatternMatches.task.exec(firstLine(input)) || [
+            "",
+            "",
+        ])[1].trimEnd();
     }
 
     if (nodeIsNote(input)) {
@@ -55,7 +64,10 @@ export function getNodeValue(input: string): string {
 export function getNodeDepth(input: string): number {
     return (
         Math.floor(
-            (input.match(indent) || ["", ""])[1].replace(/\t/g, "  ").length / 2
+            (input.match(nodePatternMatches.indent) || ["", ""])[1].replace(
+                /\t/g,
+                "  "
+            ).length / 2
         ) + 1
     );
 }
@@ -78,7 +90,7 @@ export function nodeIsProject(input: string): boolean {
     if (nodeIsTask(input)) {
         return false;
     }
-    return input.match(project) === null ? false : true;
+    return input.match(nodePatternMatches.project) === null ? false : true;
 }
 /*
  * Determine if node is a top-level project.
@@ -92,7 +104,7 @@ export function nodeIsRootProject(input: string): boolean {
  * Determine if node is a task.
  */
 export function nodeIsTask(input: string): boolean {
-    return input.match(task) === null ? false : true;
+    return input.match(nodePatternMatches.task) === null ? false : true;
 }
 /*
  * Determine if node is a note.
