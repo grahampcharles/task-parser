@@ -25,7 +25,7 @@ export declare class TaskPaperNode {
     toStringWithChildren(exceptTags?: string[]): string[];
     tagValue(tagName: string): string | undefined;
     hasTag(tagNames: string | string[]): boolean;
-    setTag(tagName: string, tagValue: string): void;
+    setTag(tagName: string, tagValue: string | undefined): void;
     removeTag(tagName: string | string[]): void;
     containsItem(nodeToMatch: TaskPaperNode): boolean;
     clone(): TaskPaperNode;
