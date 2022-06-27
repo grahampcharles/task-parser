@@ -297,7 +297,7 @@ export class TaskPaperNode {
         return this.tags?.some((tag) => tagNames.includes(tag.tag)) ?? false;
     }
 
-    setTag(tagName: string, tagValue: string): void {
+    setTag(tagName: string, tagValue: string | undefined): void {
         if (this.tags === undefined) {
             this.tags = [new TagWithValue(tagName, tagValue)];
             return;
