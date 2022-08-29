@@ -9,3 +9,4 @@ export function firstLine(input: string): string {
 function normalizeLineFeeds(input: string): string {
     return input.replace(/\r\n/gm, "\n").replace(/\r/gm, "\n");
 }
+

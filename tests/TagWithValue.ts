@@ -1,4 +1,4 @@
-import { TagWithValue } from "../TagWithValue";
+import { TagWithValue } from "../src/TagWithValue";
 import { expect } from "chai";
 import "mocha";
 

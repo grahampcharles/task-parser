@@ -116,6 +116,33 @@ export function nodeIsNote(input: string): boolean {
     return !(nodeIsProject(input) || nodeIsTask(input));
 }
 
+/*
+ * Return all notes at the beginning of a node
+ */
+export function makeNotesNode(input: string[]): {
+    node: TaskPaperNode | undefined;
+    lineCount: number;
+} {
+    const notes: string[] = [];
+
+    for (const line of input) {
+        if (!nodeIsNote(line)) {
+            break;
+        }
+        notes.push(line);
+    }
+
+    if (notes.length === 0) {
+        return { node: undefined, lineCount: 0 };
+    }
+
+    const ret = new TaskPaperNode("");
+    ret.type = "note";
+    ret.value = notes.join("\n");
+
+    return { node: ret, lineCount: notes.length };
+}
+
 export class TaskPaperNode {
     type: TaskPaperNodeType;
     value?: string;
@@ -134,6 +161,9 @@ export class TaskPaperNode {
             } else {
                 this.type = getNodeType(input);
             }
+
+            // first line of this node's inner content
+            let firstChildLine = this.type === "document" ? 0 : 1;
 
             // set property values, depending on type
             this.depth = this.type === "document" ? 0 : getNodeDepth(input);
@@ -168,13 +198,27 @@ export class TaskPaperNode {
                         );
                         newNode.parent = this;
                         this.children.push(newNode);
+                        firstChildLine = newNode.lastLine();
                     }
                 });
             }
 
+            // add any subsequent notes as a child
+            const { node: notesNode, lineCount } = makeNotesNode(
+                lines.slice(firstChildLine)
+            );
+            if (notesNode !== undefined) {
+                notesNode.parent = this;
+                notesNode.index = { column: 0, line: lineNumber + 1 };
+                this.children.push(notesNode);
+
+                // update index to account for any consumed sub-children
+                firstChildLine = lineNumber + lineCount;
+            }
+
             if (this.type === "project") {
                 for (
-                    let index = 1; // skip the current line
+                    let index = firstChildLine; // skip the current line
                     index < lines.length;
                     index++
                 ) {
@@ -184,9 +228,8 @@ export class TaskPaperNode {
                     );
 
                     if (
-                        newNode.type !== "unknown" &&
-                        newNode.type !== "note" &&
-                        newNode.depth <= this.depth
+                        newNode.type === "unknown" || // skip unknown lines
+                        newNode.depth < this.depth // promote lesser-indented lines
                     ) {
                         break;
                     }
