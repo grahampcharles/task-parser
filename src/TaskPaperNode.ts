@@ -176,6 +176,8 @@ export class TaskPaperNode {
 
             // process children
             const lines = splitLines(input);
+
+            // DOCUMENT; add a child for each of the root level projects
             if (this.type === "document") {
                 lines.forEach((line: string, index: number) => {
                     // find the next project; parse this child only up to there
@@ -203,22 +205,10 @@ export class TaskPaperNode {
                 });
             }
 
-            // add any subsequent notes as a child
-            const { node: notesNode, lineCount } = makeNotesNode(
-                lines.slice(firstChildLine)
-            );
-            if (notesNode !== undefined) {
-                notesNode.parent = this;
-                notesNode.index = { column: 0, line: lineNumber + 1 };
-                this.children.push(notesNode);
-
-                // update index to account for any consumed sub-children
-                firstChildLine = lineNumber + lineCount;
-            }
-
-            if (this.type === "project") {
+            // PROJECT or TASK; add all children
+            if (["project", "task"].includes(this.type)) {
                 for (
-                    let index = firstChildLine; // skip the current line
+                    let index = firstChildLine; 
                     index < lines.length;
                     index++
                 ) {
@@ -227,9 +217,12 @@ export class TaskPaperNode {
                         lineNumber + index
                     );
 
+                    // stop adding children if we've moved to a sibling or parent of the tree
+                    // notes nodes are always children of whatever is immediately above them;
+                    // depth is ignored
                     if (
-                        newNode.type === "unknown" || // skip unknown lines
-                        newNode.depth < this.depth // promote lesser-indented lines
+                        newNode.depth <= this.depth &&
+                        newNode.type !== "note"
                     ) {
                         break;
                     }
@@ -242,12 +235,6 @@ export class TaskPaperNode {
                 }
             }
 
-            // remove unknowns from children
-            // removed: currently, blank lines are type=unknown, and we want to retain those
-            // could add blank lines to "note"?
-            // this.children = this.children.filter(
-            //     (node) => node.type !== "unknown"
-            // );
             return;
         }
 
@@ -287,9 +274,6 @@ export class TaskPaperNode {
         if (this.type === "document") {
             return "";
         }
-        // if (this.type === "note" || this.type === "unknown") {
-        //     return this.value || "";
-        // }
 
         const tags =
             this.tags

@@ -20,14 +20,14 @@ export const todoWithNotes = `Test Project 1:
 \t- test item 1
 \tNormally indented note, single line.
 \t- test item 2
-Bizarrely indented note, single line.
+Non-indented note, single line.
 \t- test item 3
-\t\t\t\tBizarrely indented note, single line.
+\t\t\t\tSuper-indented note, single line.
 \t- test item 4
 \tNormally indented note,
 \tmultiple lines.
 \t- test item 5
-Bizarrely indented note, 
+Differently indented note, 
 \t\t\tmultiple lines.
 \t- test item 6
 \tNote with a colon inside: this is a thing!

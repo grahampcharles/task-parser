@@ -21,7 +21,7 @@ describe("Make Notes Node", () => {
 });
 
 describe("TaskPaperNode Does Not Require Project", () => {
-    it("task node without parent prject", () => {
+    it("task node without parent project", () => {
         const taskWithANote = `- task\nNotes are here`;
         const parsedNode = new TaskPaperNode(taskWithANote);
         expect(parsedNode.children.length).to.equal(1);
@@ -34,7 +34,10 @@ describe("TaskPaperNode Notes Parsing", () => {
         const taskWithANote = `Project:\n- task\nNotes are here`;
         const parsedNode = new TaskPaperNode(taskWithANote);
         expect(parsedNode.children.length).to.equal(1);
-        expect(parsedNode).to.have.deep.nested.property("[0].type", "document");
+        expect(parsedNode).to.haveOwnProperty("type", "document");
+        expect(parsedNode.children[0]).to.haveOwnProperty("type", "project");
+        expect(parsedNode.children[0].children[0]).to.haveOwnProperty("type", "task");
+        expect(parsedNode.children[0].children[0].children[0]).to.haveOwnProperty("type", "note");
     });
 
     it("node is Project", () => {

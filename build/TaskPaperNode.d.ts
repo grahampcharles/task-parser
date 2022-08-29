@@ -10,6 +10,10 @@ export declare function nodeIsProject(input: string): boolean;
 export declare function nodeIsRootProject(input: string): boolean;
 export declare function nodeIsTask(input: string): boolean;
 export declare function nodeIsNote(input: string): boolean;
+export declare function makeNotesNode(input: string[]): {
+    node: TaskPaperNode | undefined;
+    lineCount: number;
+};
 export declare class TaskPaperNode {
     type: TaskPaperNodeType;
     value?: string;

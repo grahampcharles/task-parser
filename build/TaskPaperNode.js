@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TaskPaperNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
+exports.TaskPaperNode = exports.makeNotesNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
 var strings_1 = require("./strings");
 var TagWithValue_1 = require("./TagWithValue");
 // regex for project: https://regex101.com/r/9et9l4/1
@@ -111,6 +111,27 @@ function nodeIsNote(input) {
     return !(nodeIsProject(input) || nodeIsTask(input));
 }
 exports.nodeIsNote = nodeIsNote;
+/*
+ * Return all notes at the beginning of a node
+ */
+function makeNotesNode(input) {
+    var notes = [];
+    for (var _i = 0, input_1 = input; _i < input_1.length; _i++) {
+        var line = input_1[_i];
+        if (!nodeIsNote(line)) {
+            break;
+        }
+        notes.push(line);
+    }
+    if (notes.length === 0) {
+        return { node: undefined, lineCount: 0 };
+    }
+    var ret = new TaskPaperNode("");
+    ret.type = "note";
+    ret.value = notes.join("\n");
+    return { node: ret, lineCount: notes.length };
+}
+exports.makeNotesNode = makeNotesNode;
 var TaskPaperNode = /** @class */ (function () {
     function TaskPaperNode(input, lineNumber) {
         if (lineNumber === void 0) { lineNumber = 0; }
@@ -126,6 +147,8 @@ var TaskPaperNode = /** @class */ (function () {
             else {
                 this.type = getNodeType(input);
             }
+            // first line of this node's inner content
+            var firstChildLine_1 = this.type === "document" ? 0 : 1;
             // set property values, depending on type
             this.depth = this.type === "document" ? 0 : getNodeDepth(input);
             this.tags = ["project", "task"].includes(this.type)
@@ -136,6 +159,7 @@ var TaskPaperNode = /** @class */ (function () {
             this.index = { line: lineNumber, column: 0 };
             // process children
             var lines_1 = (0, strings_1.splitLines)(input);
+            // DOCUMENT; add a child for each of the root level projects
             if (this.type === "document") {
                 lines_1.forEach(function (line, index) {
                     // find the next project; parse this child only up to there
@@ -153,16 +177,19 @@ var TaskPaperNode = /** @class */ (function () {
                         );
                         newNode.parent = _this;
                         _this.children.push(newNode);
+                        firstChildLine_1 = newNode.lastLine();
                     }
                 });
             }
-            if (this.type === "project") {
-                for (var index = 1; // skip the current line
+            // PROJECT or TASK; add all children
+            if (["project", "task"].includes(this.type)) {
+                for (var index = firstChildLine_1; // skip the current line
                  index < lines_1.length; index++) {
                     var newNode = new TaskPaperNode(lines_1.slice(index).join("\n"), lineNumber + index);
-                    if (newNode.type !== "unknown" &&
-                        newNode.type !== "note" &&
-                        newNode.depth <= this.depth) {
+                    // stop adding children if we've moved down to a lower branch of the tree
+                    // notes nodes are always children of whatever is immediately above them;
+                    // depth is ignored
+                    if (newNode.depth < this.depth && newNode.type !== "note") {
                         break;
                     }
                     newNode.parent = this;
@@ -171,12 +198,6 @@ var TaskPaperNode = /** @class */ (function () {
                     index = newNode.lastLine() - lineNumber;
                 }
             }
-            // remove unknowns from children
-            // removed: currently, blank lines are type=unknown, and we want to retain those
-            // could add blank lines to "note"?
-            // this.children = this.children.filter(
-            //     (node) => node.type !== "unknown"
-            // );
             return;
         }
         // deep clone from existing
