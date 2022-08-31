@@ -95,10 +95,15 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsNote("\t- Test")).to.equal(false);
         expect(nodeIsNote("This is a note.")).to.equal(true);
         expect(nodeIsNote("    This is an indented note.")).to.equal(true);
+        expect(nodeIsNote("\t\tThis is a tab-indented note.")).to.equal(true);
     });
 
     it("node is Unknown", () => {
         expect(getNodeType("")).to.equal("unknown");
+        expect(getNodeType("\t\t")).to.equal("unknown");
+        expect(getNodeType("  \t  \t")).to.equal("unknown");
+        expect(getNodeType("                        ")).to.equal("unknown");
+        expect(getNodeType("        \nProject on Next Line:")).to.equal("unknown");        
     });
 
     it("getNodeType", () => {

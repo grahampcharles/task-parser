@@ -10,10 +10,6 @@ export declare function nodeIsProject(input: string): boolean;
 export declare function nodeIsRootProject(input: string): boolean;
 export declare function nodeIsTask(input: string): boolean;
 export declare function nodeIsNote(input: string): boolean;
-export declare function makeNotesNode(input: string[]): {
-    node: TaskPaperNode | undefined;
-    lineCount: number;
-};
 export declare class TaskPaperNode {
     type: TaskPaperNodeType;
     value?: string;
@@ -24,6 +20,7 @@ export declare class TaskPaperNode {
     parent: TaskPaperNode | undefined;
     constructor(input: string | TaskPaperNode, lineNumber?: number);
     lastLine(): number;
+    lineCount(): number;
     rootProject(): TaskPaperNode | undefined;
     toString(exceptTags?: string[]): string;
     toStringWithChildren(exceptTags?: string[]): string[];

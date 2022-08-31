@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TaskPaperNode = exports.makeNotesNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
+exports.TaskPaperNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
 var strings_1 = require("./strings");
 var TagWithValue_1 = require("./TagWithValue");
 // regex for project: https://regex101.com/r/9et9l4/1
@@ -66,11 +66,12 @@ exports.getNodeDepth = getNodeDepth;
  * Compute type from a node string.
  */
 function getNodeType(input) {
-    if (nodeIsProject(input))
+    var theFirstLine = (0, strings_1.firstLine)(input);
+    if (nodeIsProject(theFirstLine))
         return "project";
-    if (nodeIsTask(input))
+    if (nodeIsTask(theFirstLine))
         return "task";
-    if (nodeIsNote(input))
+    if (nodeIsNote(theFirstLine))
         return "note";
     return "unknown";
 }
@@ -79,76 +80,62 @@ exports.getNodeType = getNodeType;
  * Determine if node is a project.
  */
 function nodeIsProject(input) {
+    var theFirstLine = (0, strings_1.firstLine)(input);
     // task is precedent
-    if (nodeIsTask(input)) {
+    if (nodeIsTask(theFirstLine)) {
         return false;
     }
-    return input.match(nodePatternMatches.project) === null ? false : true;
+    return theFirstLine.match(nodePatternMatches.project) === null
+        ? false
+        : true;
 }
 exports.nodeIsProject = nodeIsProject;
 /*
  * Determine if node is a top-level project.
  */
 function nodeIsRootProject(input) {
+    var theFirstLine = (0, strings_1.firstLine)(input);
     // document and task are precedent
-    return nodeIsProject(input) && getNodeDepth(input) === 1;
+    return nodeIsProject(theFirstLine) && getNodeDepth(theFirstLine) === 1;
 }
 exports.nodeIsRootProject = nodeIsRootProject;
 /*
  * Determine if node is a task.
  */
 function nodeIsTask(input) {
-    return input.match(nodePatternMatches.task) === null ? false : true;
+    var theFirstLine = (0, strings_1.firstLine)(input);
+    return theFirstLine.match(nodePatternMatches.task) === null ? false : true;
 }
 exports.nodeIsTask = nodeIsTask;
 /*
  * Determine if node is a note.
  */
 function nodeIsNote(input) {
-    if (input.trim().length === 0) {
+    var theFirstLine = (0, strings_1.firstLine)(input);
+    if (theFirstLine.trim().length === 0) {
         return false;
     }
-    return !(nodeIsProject(input) || nodeIsTask(input));
+    return !(nodeIsProject(theFirstLine) || nodeIsTask(theFirstLine));
 }
 exports.nodeIsNote = nodeIsNote;
-/*
- * Return all notes at the beginning of a node
- */
-function makeNotesNode(input) {
-    var notes = [];
-    for (var _i = 0, input_1 = input; _i < input_1.length; _i++) {
-        var line = input_1[_i];
-        if (!nodeIsNote(line)) {
-            break;
-        }
-        notes.push(line);
-    }
-    if (notes.length === 0) {
-        return { node: undefined, lineCount: 0 };
-    }
-    var ret = new TaskPaperNode("");
-    ret.type = "note";
-    ret.value = notes.join("\n");
-    return { node: ret, lineCount: notes.length };
-}
-exports.makeNotesNode = makeNotesNode;
 var TaskPaperNode = /** @class */ (function () {
     function TaskPaperNode(input, lineNumber) {
         if (lineNumber === void 0) { lineNumber = 0; }
-        var _this = this;
         var _a;
         this.children = new Array();
         if (typeof input === "string") {
+            //// split into children
+            var lines = (0, strings_1.splitLines)(input);
             //// get node type
             // special case: if this is line 0 of a multi-line node, it's a document
             if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
                 this.type = "document";
             }
             else {
-                this.type = getNodeType(input);
+                this.type = getNodeType(lines[0]);
             }
             // first line of this node's inner content
-            var firstChildLine_1 = this.type === "document" ? 0 : 1;
+            var firstChildLine = this.type === "document" ? 0 : 1;
             // set property values, depending on type
             this.depth = this.type === "document" ? 0 : getNodeDepth(input);
             this.tags = ["project", "task"].includes(this.type)
@@ -157,45 +144,26 @@ var TaskPaperNode = /** @class */ (function () {
             this.value =
                 this.type !== "document" ? getNodeValue(input) : undefined;
             this.index = { line: lineNumber, column: 0 };
-            // process children
-            var lines_1 = (0, strings_1.splitLines)(input);
-            // DOCUMENT; add a child for each of the root level projects
-            if (this.type === "document") {
-                lines_1.forEach(function (line, index) {
-                    // find the next project; parse this child only up to there
-                    if (nodeIsRootProject(line)) {
-                        var endIndex = lines_1
-                            .slice(index + 1)
-                            .findIndex(function (innerLine) {
-                            return nodeIsRootProject(innerLine);
-                        });
-                        var newNode = new TaskPaperNode(lines_1
-                            .slice(index, endIndex === -1
-                            ? undefined
-                            : endIndex + index + 1)
-                            .join("\n"), lineNumber + index + 1 // one-based line numbers
-                        );
-                        newNode.parent = _this;
-                        _this.children.push(newNode);
-                        firstChildLine_1 = newNode.lastLine();
-                    }
-                });
-            }
-            // PROJECT or TASK; add all children
-            if (["project", "task"].includes(this.type)) {
-                for (var index = firstChildLine_1; // skip the current line
-                 index < lines_1.length; index++) {
-                    var newNode = new TaskPaperNode(lines_1.slice(index).join("\n"), lineNumber + index);
-                    // stop adding children if we've moved down to a lower branch of the tree
-                    // notes nodes are always children of whatever is immediately above them;
-                    // depth is ignored
-                    if (newNode.depth < this.depth && newNode.type !== "note") {
+            // DOCUMENT or PROJECT or TASK node types can contain children,
+            // so step through and add all children
+            if (["document", "project", "task"].includes(this.type)) {
+                for (var index = firstChildLine; index < lines.length; index++) {
+                    var newNode = new TaskPaperNode(lines.slice(index).join("\n"), lineNumber + index + (1 - firstChildLine) // 1-based line numbering
+                    );
+                    // Stop adding children if we've moved to a sibling or parent of the tree.
+                    // Notes nodes are always children of whatever is immediately above them
+                    // regardless of indentation level.
+                    if (newNode.type !== "note" &&
+                        newNode.depth <= this.depth) {
                         break;
                     }
-                    newNode.parent = this;
-                    this.children.push(newNode);
-                    // update index to account for any consumed sub-children
-                    index = newNode.lastLine() - lineNumber;
+                    // push child onto stack, ignoring unknowns (which is whitespace)
+                    if (newNode.type !== "unknown") {
+                        newNode.parent = this;
+                        this.children.push(newNode);
+                    }
+                    // update index to account for any consumed children
+                    index = index + newNode.lineCount() - 1;
                 }
             }
             return;
@@ -217,6 +185,15 @@ var TaskPaperNode = /** @class */ (function () {
         }
         return this.index.line;
     };
+    // sum of node and all children
+    TaskPaperNode.prototype.lineCount = function () {
+        if (this.children.length > 0) {
+            return this.children.reduce(function (sum, current) {
+                return sum + current.lineCount();
+            }, 1); // initial value 1 to account for the node itself
+        }
+        return 1; // no children
+    };
     TaskPaperNode.prototype.rootProject = function () {
         // step back through the tree to find the root project
         if (this.parent === undefined) {
@@ -232,9 +209,6 @@ var TaskPaperNode = /** @class */ (function () {
         if (this.type === "document") {
             return "";
         }
-        // if (this.type === "note" || this.type === "unknown") {
-        //     return this.value || "";
-        // }
         var tags = ((_a = this.tags) === null || _a === void 0 ? void 0 : _a.filter(function (tag) {
             return !(exceptTags === null || exceptTags === void 0 ? void 0 : exceptTags.some(function (exceptTag) { return tag.tag === exceptTag; }));
         }).map(function (tag) { return tag.toString(); }).join(" ")) || "";

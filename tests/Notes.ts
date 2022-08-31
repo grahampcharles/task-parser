@@ -1,46 +1,58 @@
 import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";
-import {
-    makeNotesNode,
-    nodeIsProject,
-    TaskPaperNode,
-} from "../src/TaskPaperNode";
+import { nodeIsProject, TaskPaperNode } from "../src/TaskPaperNode";
 import { todoWithNotes } from "./testSource";
 
-describe("Make Notes Node", () => {
-    it("makeNotesNode without parent", () => {
-        const { node, lineCount } = makeNotesNode([
-            "test note line 1",
-            "test note line 2",
-        ]);
-        expect(node?.type).to.equal("note");
-        expect(lineCount).to.equal(2);
-        expect(node?.value).to.equal(`test note line 1\ntest note line 2`);
-    });
-});
+// describe("Make Notes Node", () => {
+//     it("makeNotesNode without parent", () => {
+//         const { node, lineCount } = makeNotesNode([
+//             "test note line 1",
+//             "test note line 2",
+//         ]);
+//         expect(node?.type).to.equal("note");
+//         expect(lineCount).to.equal(2);
+//         expect(node?.value).to.equal(`test note line 1\ntest note line 2`);
+//     });
+// });
 
-describe("TaskPaperNode Does Not Require Project", () => {
-    it("task node without parent project", () => {
+describe("Document With No Top-Level Project", () => {
+    it("document without top-level project", () => {
         const taskWithANote = `- task\nNotes are here`;
         const parsedNode = new TaskPaperNode(taskWithANote);
         expect(parsedNode.children.length).to.equal(1);
-        expect(parsedNode).to.have.deep.nested.property("[0].type", "task");
+        expect(parsedNode.children[0]).to.haveOwnProperty("type", "task");
     });
 });
 
-describe("TaskPaperNode Notes Parsing", () => {
+describe("TaskPaperNode Parsing", () => {
+    it("unindented task node becomes project sibling", () => {
+        const taskWithANote = `Project:\n- task`;
+        const parsedNode = new TaskPaperNode(taskWithANote);
+        expect(parsedNode.children.length).to.equal(2);
+        expect(parsedNode.children[0]).to.haveOwnProperty("type", "project");
+        expect(parsedNode.children[1]).to.haveOwnProperty("type", "task");
+    });
+});
+
+describe("Notes Parsing", () => {
+
     it("task node includes its notes", () => {
-        const taskWithANote = `Project:\n- task\nNotes are here`;
+        const taskWithANote = `Project:\n\t- task\nNotes are here`;
         const parsedNode = new TaskPaperNode(taskWithANote);
         expect(parsedNode.children.length).to.equal(1);
         expect(parsedNode).to.haveOwnProperty("type", "document");
         expect(parsedNode.children[0]).to.haveOwnProperty("type", "project");
-        expect(parsedNode.children[0].children[0]).to.haveOwnProperty("type", "task");
-        expect(parsedNode.children[0].children[0].children[0]).to.haveOwnProperty("type", "note");
+        expect(parsedNode.children[0].children[0]).to.haveOwnProperty(
+            "type",
+            "task"
+        );
+        expect(
+            parsedNode.children[0].children[0].children[0]
+        ).to.haveOwnProperty("type", "note");
     });
 
-    it("node is Project", () => {
+    it("node is project", () => {
         expect(nodeIsProject(todoWithNotes)).to.equal(true);
     });
 
