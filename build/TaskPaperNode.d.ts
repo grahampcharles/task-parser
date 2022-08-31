@@ -20,6 +20,7 @@ export declare class TaskPaperNode {
     parent: TaskPaperNode | undefined;
     constructor(input: string | TaskPaperNode, lineNumber?: number);
     lastLine(): number;
+    lineCount(): number;
     rootProject(): TaskPaperNode | undefined;
     toString(exceptTags?: string[]): string;
     toStringWithChildren(exceptTags?: string[]): string[];

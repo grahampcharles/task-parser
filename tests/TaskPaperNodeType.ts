@@ -1,7 +1,4 @@
-import {
-    parseTaskPaperNodeType,
-    TaskPaperNodeType,
-} from "../TaskPaperNodeType";
+import { parseTaskPaperNodeType } from "../src/TaskPaperNodeType";
 import { expect } from "chai";
 import "mocha";
 

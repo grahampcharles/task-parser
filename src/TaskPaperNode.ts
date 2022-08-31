@@ -1,4 +1,4 @@
-import { firstLine, splitLines } from "./strings";
+import { splitLines, firstLine } from "./strings";
 import { TagWithValue } from "./TagWithValue";
 import { TaskPaperNodeType } from "./TaskPaperNodeType";
 import { TaskPaperIndex } from "./types";
@@ -76,9 +76,10 @@ export function getNodeDepth(input: string): number {
  * Compute type from a node string.
  */
 export function getNodeType(input: string): TaskPaperNodeType {
-    if (nodeIsProject(input)) return "project";
-    if (nodeIsTask(input)) return "task";
-    if (nodeIsNote(input)) return "note";
+    const theFirstLine = firstLine(input);
+    if (nodeIsProject(theFirstLine)) return "project";
+    if (nodeIsTask(theFirstLine)) return "task";
+    if (nodeIsNote(theFirstLine)) return "note";
     return "unknown";
 }
 
@@ -86,34 +87,41 @@ export function getNodeType(input: string): TaskPaperNodeType {
  * Determine if node is a project.
  */
 export function nodeIsProject(input: string): boolean {
+    const theFirstLine = firstLine(input);
+
     // task is precedent
-    if (nodeIsTask(input)) {
+    if (nodeIsTask(theFirstLine)) {
         return false;
     }
-    return input.match(nodePatternMatches.project) === null ? false : true;
+    return theFirstLine.match(nodePatternMatches.project) === null
+        ? false
+        : true;
 }
 /*
  * Determine if node is a top-level project.
  */
 export function nodeIsRootProject(input: string): boolean {
+    const theFirstLine = firstLine(input);
     // document and task are precedent
-    return nodeIsProject(input) && getNodeDepth(input) === 1;
+    return nodeIsProject(theFirstLine) && getNodeDepth(theFirstLine) === 1;
 }
 
 /*
  * Determine if node is a task.
  */
 export function nodeIsTask(input: string): boolean {
-    return input.match(nodePatternMatches.task) === null ? false : true;
+    const theFirstLine = firstLine(input);
+    return theFirstLine.match(nodePatternMatches.task) === null ? false : true;
 }
 /*
  * Determine if node is a note.
  */
 export function nodeIsNote(input: string): boolean {
-    if (input.trim().length === 0) {
+    const theFirstLine = firstLine(input);
+    if (theFirstLine.trim().length === 0) {
         return false;
     }
-    return !(nodeIsProject(input) || nodeIsTask(input));
+    return !(nodeIsProject(theFirstLine) || nodeIsTask(theFirstLine));
 }
 
 export class TaskPaperNode {
@@ -127,13 +135,19 @@ export class TaskPaperNode {
 
     constructor(input: string | TaskPaperNode, lineNumber: number = 0) {
         if (typeof input === "string") {
+            //// split into children
+            const lines = splitLines(input);
+
             //// get node type
             // special case: if this is line 0 of a multi-line node, it's a document
             if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
                 this.type = "document";
             } else {
-                this.type = getNodeType(input);
+                this.type = getNodeType(lines[0]);
             }
+
+            // first line of this node's inner content
+            const firstChildLine = this.type === "document" ? 0 : 1;
 
             // set property values, depending on type
             this.depth = this.type === "document" ? 0 : getNodeDepth(input);
@@ -144,67 +158,40 @@ export class TaskPaperNode {
                 this.type !== "document" ? getNodeValue(input) : undefined;
             this.index = { line: lineNumber, column: 0 } as TaskPaperIndex;
 
-            // process children
-            const lines = splitLines(input);
-            if (this.type === "document") {
-                lines.forEach((line: string, index: number) => {
-                    // find the next project; parse this child only up to there
-                    if (nodeIsRootProject(line)) {
-                        const endIndex = lines
-                            .slice(index + 1)
-                            .findIndex((innerLine) =>
-                                nodeIsRootProject(innerLine)
-                            );
-                        const newNode = new TaskPaperNode(
-                            lines
-                                .slice(
-                                    index,
-                                    endIndex === -1
-                                        ? undefined
-                                        : endIndex + index + 1
-                                )
-                                .join("\n"),
-                            lineNumber + index + 1 // one-based line numbers
-                        );
-                        newNode.parent = this;
-                        this.children.push(newNode);
-                    }
-                });
-            }
-
-            if (this.type === "project") {
+            // DOCUMENT or PROJECT or TASK node types can contain children,
+            // so step through and add all children
+            if (["document", "project", "task"].includes(this.type)) {
                 for (
-                    let index = 1; // skip the current line
+                    let index = firstChildLine;
                     index < lines.length;
                     index++
                 ) {
                     const newNode = new TaskPaperNode(
                         lines.slice(index).join("\n"),
-                        lineNumber + index
+                        lineNumber + index + (1 - firstChildLine) // 1-based line numbering
                     );
 
+                    // Stop adding children if we've moved to a sibling or parent of the tree.
+                    // Notes nodes are always children of whatever is immediately above them
+                    // regardless of indentation level.
                     if (
-                        newNode.type !== "unknown" &&
                         newNode.type !== "note" &&
                         newNode.depth <= this.depth
                     ) {
                         break;
                     }
 
-                    newNode.parent = this;
-                    this.children.push(newNode);
+                    // push child onto stack, ignoring unknowns (which is whitespace)
+                    if (newNode.type !== "unknown") {
+                        newNode.parent = this;
+                        this.children.push(newNode);
+                    }
 
-                    // update index to account for any consumed sub-children
-                    index = newNode.lastLine() - lineNumber;
+                    // update index to account for any consumed children
+                    index = index + newNode.lineCount() - 1;
                 }
             }
 
-            // remove unknowns from children
-            // removed: currently, blank lines are type=unknown, and we want to retain those
-            // could add blank lines to "note"?
-            // this.children = this.children.filter(
-            //     (node) => node.type !== "unknown"
-            // );
             return;
         }
 
@@ -229,6 +216,16 @@ export class TaskPaperNode {
         return this.index.line;
     }
 
+    // sum of node and all children
+    lineCount(): number {
+        if (this.children.length > 0) {
+            return this.children.reduce((sum, current) => {
+                return sum + current.lineCount();
+            }, 1); // initial value 1 to account for the node itself
+        }
+        return 1; // no children
+    }
+
     rootProject(): TaskPaperNode | undefined {
         // step back through the tree to find the root project
         if (this.parent === undefined) {
@@ -244,9 +241,6 @@ export class TaskPaperNode {
         if (this.type === "document") {
             return "";
         }
-        // if (this.type === "note" || this.type === "unknown") {
-        //     return this.value || "";
-        // }
 
         const tags =
             this.tags

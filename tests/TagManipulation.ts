@@ -1,7 +1,7 @@
-import { Tags } from "../Tags";
+import { Tags } from "../src/Tags";
 import { expect } from "chai";
 import "mocha";
-import { TaskPaperNode } from "../TaskPaperNode";
+import { TaskPaperNode } from "../src/TaskPaperNode";
 
 // Reference: RegEx tests run at https://regex101.com/r/MJuKx4
 describe("Tag manipulation", () => {

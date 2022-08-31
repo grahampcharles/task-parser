@@ -15,3 +15,20 @@ export const todoSingleProject = `Test Project 1:
 \t- test item 2 @tag1
 \t- test item 3 @tag1 @tag2(value)
 ;`;
+
+export const todoWithNotes = `Test Project 1:
+\t- test item 1
+\tNormally indented note, single line.
+\t- test item 2
+Non-indented note, single line.
+\t- test item 3
+\t\t\t\tSuper-indented note, single line.
+\t- test item 4
+\tNormally indented note,
+\tmultiple lines.
+\t- test item 5
+Differently indented note, 
+\t\t\tmultiple lines.
+\t- test item 6
+\tNote with a colon inside: this is a thing!
+`;
