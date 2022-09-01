@@ -15,7 +15,7 @@ const defaultToStringOptions = {
 const nodePatternMatches = {
     topLevelProject: /^(?:[^\s]+.*)(?::)(?:.*)/gm,
     project: /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)((?=[@].*)|$)/gm,
-    task: /^(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/,
+    task: /^(?:\s*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/,
     taskWithTags: /(?:.*- )(.*)/,
     indent: /^([ \t]*)(?:[^\s].*)/,
     tags: /(?:[^@\n]*[ \t]+)(@.*)/,

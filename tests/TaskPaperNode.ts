@@ -44,6 +44,8 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsProject("  - Test")).to.equal(false);
         expect(nodeIsProject("\t- Test")).to.equal(false);
         expect(nodeIsProject(todoSingleProject)).to.equal(true);
+        expect(nodeIsProject("Project With - Hyphens:")).to.equal(true);
+        expect(nodeIsProject("Project With: Colons:")).to.equal(true);
     });
 
     it("node is Root Project", () => {
@@ -83,6 +85,7 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsTask("- Test @tag1, @tag2(value)")).to.equal(true);
         expect(nodeIsTask("  - Test")).to.equal(true);
         expect(nodeIsTask("\t- Test")).to.equal(true);
+        expect(nodeIsTask("Stuff Before - Test")).to.equal(false);
     });
 
     it("node is Note", () => {
@@ -96,6 +99,8 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsNote("This is a note.")).to.equal(true);
         expect(nodeIsNote("    This is an indented note.")).to.equal(true);
         expect(nodeIsNote("\t\tThis is a tab-indented note.")).to.equal(true);
+        expect(nodeIsNote("1. Gielan, M. (2015). Broadcasting happiness: The science of igniting and sustaining positive change. ")).to.equal(true);
+        
     });
 
     it("node is Unknown", () => {
@@ -174,6 +179,10 @@ describe("TaskPaperNode types, values", () => {
         expect(
             getNodeValue("This is a note.\nThis is a second line.")
         ).to.equal("This is a note.");
+
+        expect(getNodeValue("Project With - Hyphens:")).to.equal("Project With - Hyphens");
+        expect(getNodeValue("Project With: Colons:")).to.equal("Project With: Colons");
+
     });
 
     it("getNodeTags", () => {
