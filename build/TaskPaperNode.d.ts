@@ -1,6 +1,9 @@
 import { TagWithValue } from "./TagWithValue";
 import { TaskPaperNodeType } from "./TaskPaperNodeType";
 import { TaskPaperIndex } from "./types";
+export interface ToStringOptions {
+    blankLineAfterProject: boolean;
+}
 export declare function getTagValueArray(input: string): TagWithValue[];
 export declare function getNodeTags(input: string): string;
 export declare function getNodeValue(input: string): string;
@@ -22,8 +25,8 @@ export declare class TaskPaperNode {
     lastLine(): number;
     lineCount(): number;
     rootProject(): TaskPaperNode | undefined;
-    toString(exceptTags?: string[]): string;
-    toStringWithChildren(exceptTags?: string[]): string[];
+    toString(exceptTags?: string[], options?: ToStringOptions): string;
+    toStringWithChildren(exceptTags?: string[], options?: ToStringOptions): string[];
     tagValue(tagName: string): string | undefined;
     hasTag(tagNames: string | string[]): boolean;
     setTag(tagName: string, tagValue: string | undefined): void;

@@ -3,7 +3,14 @@ import { TagWithValue } from "./TagWithValue";
 import { TaskPaperNodeType } from "./TaskPaperNodeType";
 import { TaskPaperIndex } from "./types";
 
-// regex for project: https://regex101.com/r/9et9l4/1
+// regex tests for project: https://regex101.com/r/9et9l4/1
+
+export interface ToStringOptions {
+    blankLineAfterProject: boolean;
+}
+const defaultToStringOptions = {
+    blankLineAfterProject: true,
+};
 
 const nodePatternMatches = {
     topLevelProject: /^(?:[^\s]+.*)(?::)(?:.*)/gm,
@@ -237,7 +244,10 @@ export class TaskPaperNode {
         return this.parent.rootProject();
     }
 
-    toString(exceptTags?: string[]): string {
+    toString(
+        exceptTags?: string[],
+        options: ToStringOptions = defaultToStringOptions
+    ): string {
         if (this.type === "document") {
             return "";
         }
@@ -260,17 +270,29 @@ export class TaskPaperNode {
             .concat(`${endMark}`);
     }
 
-    toStringWithChildren(exceptTags?: string[]): string[] {
+    toStringWithChildren(
+        exceptTags?: string[],
+        options: ToStringOptions = defaultToStringOptions
+    ): string[] {
         const results = new Array<string>();
 
+        // first, pass own value (except document, which doesn't have one)
         if (this.type !== "document") {
-            results.push(this.toString());
+            results.push(this.toString(exceptTags, options));
         }
 
+        // then, pass all child values
         this.children?.forEach((child) => {
-            results.push(...child.toStringWithChildren(exceptTags));
+            results.push(...child.toStringWithChildren(exceptTags, options));
         });
 
+        // add a blank line to projects if requested;
+        // do not double-add blank lines
+        if (options.blankLineAfterProject && this.type === "project") {
+            if (results[results.length - 1] !== "") {
+                results.push("");
+            }
+        }
         return results;
     }
 

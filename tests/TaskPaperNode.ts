@@ -13,7 +13,7 @@ import {
 import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";
-import { taskSimple, todoSimple, todoSingleProject } from "./testSource";
+import { taskSimple, todoNoSpaceBetweenProjects, todoSimple, todoSingleProject, todoSpaceBetweenProjects } from "./testSource";
 import { testLongSource } from "./testThreeProjectSource";
 
 // Reference:  RegEx tests run at:
@@ -429,21 +429,49 @@ describe("TaskPaperNode string conversion", () => {
     it("toString with children simple", () => {
         const simple = new TaskPaperNode(taskSimple)
             .toStringWithChildren()
-            .join("/n");
+            .join(`\n`);
         expect(simple).to.equal(taskSimple);
     });
 
+    it("toString with children, include blank line", () => {
+        const simple = new TaskPaperNode(todoSpaceBetweenProjects)
+            .toStringWithChildren(undefined, {blankLineAfterProject: true})
+            .join(`\n`);
+        const space = todoSpaceBetweenProjects;
+        expect(simple).to.equal(todoSpaceBetweenProjects);
+    });
+
+    it("toString with children, only include blank line", () => {
+        const simple = new TaskPaperNode("Project 1:\n\tSubproject 1")
+            .toStringWithChildren(undefined, {blankLineAfterProject: true});
+        expect(simple.length).to.equal
+    });
+
+    it("toString with children, add blank line", () => {
+        const simple = new TaskPaperNode(todoNoSpaceBetweenProjects)
+            .toStringWithChildren(undefined, {blankLineAfterProject: true})
+            .join(`\n`);
+        expect(simple).to.equal(todoSpaceBetweenProjects);
+    });
+
+    it("toString with children, remove blank line", () => {
+        const node = new TaskPaperNode(todoSpaceBetweenProjects);
+        const results = node.toStringWithChildren(undefined, {blankLineAfterProject: false}).join(`\n`);
+        const expectation = todoNoSpaceBetweenProjects;
+        expect(results).to.equal(expectation);
+    });
+
     it("toString single project", () => {
-        const singleProject = new TaskPaperNode(todoSingleProject)
-            .toStringWithChildren()
-            .join("\n");
-        expect(singleProject).to.equal(todoSingleProject);
+        const singleProjectNode = new TaskPaperNode(todoSingleProject);
+        const results = singleProjectNode.toStringWithChildren().join(`\n`);
+        const expectation= todoSingleProject ;
+        expect(results).to.equal(expectation);
     });
 
     it("toString multiple projects", () => {
-        const document = new TaskPaperNode(todoSimple)
-            .toStringWithChildren()
-            .join("\n");
-        expect(document).to.equal(todoSimple);
+        const multipleProjectNode = new TaskPaperNode(todoSimple);
+        const results = multipleProjectNode.toStringWithChildren().join(`\n`);
+        const expectation = `${todoSimple}\n`;
+        expect(results).to.equal(expectation);
     });
 });

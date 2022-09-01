@@ -1,3 +1,7 @@
+## 1.2.1
+
+Added a blank line at the end of projects (as an option, but the default).
+
 ## 1.2.0
 
 Currently, the "toString multiple projects" is failing because the parser ignores whitespace lines. I'm not sure how I want this dealt with. Preserving `unknown` lines would only be important if I want to be able to recreate taskpaper documents verbatim from the node tree.

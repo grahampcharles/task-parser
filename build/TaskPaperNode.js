@@ -3,7 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskPaperNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
 var strings_1 = require("./strings");
 var TagWithValue_1 = require("./TagWithValue");
-// regex for project: https://regex101.com/r/9et9l4/1
+var defaultToStringOptions = {
+    blankLineAfterProject: true,
+};
 var nodePatternMatches = {
     topLevelProject: /^(?:[^\s]+.*)(?::)(?:.*)/gm,
     project: /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)((?=[@].*)|$)/gm,
@@ -204,8 +206,9 @@ var TaskPaperNode = /** @class */ (function () {
         }
         return this.parent.rootProject();
     };
-    TaskPaperNode.prototype.toString = function (exceptTags) {
+    TaskPaperNode.prototype.toString = function (exceptTags, options) {
         var _a;
+        if (options === void 0) { options = defaultToStringOptions; }
         if (this.type === "document") {
             return "";
         }
@@ -219,15 +222,25 @@ var TaskPaperNode = /** @class */ (function () {
             .trimEnd()
             .concat("".concat(endMark));
     };
-    TaskPaperNode.prototype.toStringWithChildren = function (exceptTags) {
+    TaskPaperNode.prototype.toStringWithChildren = function (exceptTags, options) {
         var _a;
+        if (options === void 0) { options = defaultToStringOptions; }
         var results = new Array();
+        // first, pass own value (except document, which doesn't have one)
         if (this.type !== "document") {
-            results.push(this.toString());
+            results.push(this.toString(exceptTags, options));
         }
+        // then, pass all child values
         (_a = this.children) === null || _a === void 0 ? void 0 : _a.forEach(function (child) {
-            results.push.apply(results, child.toStringWithChildren(exceptTags));
+            results.push.apply(results, child.toStringWithChildren(exceptTags, options));
         });
+        // add a blank line to projects if requested;
+        // do not double-add blank lines
+        if (options.blankLineAfterProject && this.type === "project") {
+            if (results[results.length - 1] !== "") {
+                results.push("");
+            }
+        }
         return results;
     };
     TaskPaperNode.prototype.tagValue = function (tagName) {
