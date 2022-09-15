@@ -258,6 +258,39 @@ describe("TaskPaperNode parent parsing", () => {
     });
 });
 
+describe("TaskPaperNode parents", () => {
+    it("no parent", () => {
+        const task = new TaskPaperNode(taskSimple);
+        const parents = task.parents();
+        expect (parents).lengthOf(0);
+    });
+
+    it("just the document as parent", () => {
+        const document = new TaskPaperNode(todoNoSpaceBetweenProjects);
+        const project = document.children[0];
+        const parents = project.parents();
+        expect (parents).lengthOf(0);
+    });
+
+    it("project as parent", () => {
+        const document = new TaskPaperNode(todoNoSpaceBetweenProjects);
+        const project = document.children[0].children[0];
+        const parents = project.parents();
+        expect (parents).lengthOf(1);
+    });
+
+    it("first-level subproject", () => {
+        const document = new TaskPaperNode(todoSimple);
+        const project = document.children[0].children[3];
+        const task = project.children[0];
+        const parents = task.parents();
+        expect (parents).to.have.length(2);
+        const parentNames = parents.map( ( node ) => node.value ).join(".");
+        expect (parentNames).to.equal("Test Project 1.Test SubProject 1");        
+    });
+
+});
+
 describe("TaskPaperNode parsing", () => {
     it("single task", () => {
         const singleTask = new TaskPaperNode(taskSimple);

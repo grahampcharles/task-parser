@@ -1,3 +1,8 @@
+## 1.2.2
+
+Added parents() method.
+
+
 ## 1.2.1
 
 Added a blank line at the end of projects (as an option, but the default).

@@ -33,5 +33,6 @@ export declare class TaskPaperNode {
     removeTag(tagName: string | string[]): void;
     containsItem(nodeToMatch: TaskPaperNode): boolean;
     clone(): TaskPaperNode;
+    parents(): TaskPaperNode[];
     private matches;
 }

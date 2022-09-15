@@ -353,6 +353,11 @@ export class TaskPaperNode {
         return new TaskPaperNode(this);
     }
 
+    parents(): TaskPaperNode[] {
+        const grandparents = this.parent?.parents() || [];
+        return (this.parent === undefined || this.parent.type==="document") ? grandparents : grandparents.concat(this.parent);
+    }
+
     private matches(nodeToMatch: TaskPaperNode): boolean {
         return (
             this.type === "task" &&

@@ -9,7 +9,7 @@ var defaultToStringOptions = {
 var nodePatternMatches = {
     topLevelProject: /^(?:[^\s]+.*)(?::)(?:.*)/gm,
     project: /(?:[\t ]*)([^\n]+?)(?::)(?:[\t ]*)((?=[@].*)|$)/gm,
-    task: /^(?:.*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/,
+    task: /^(?:\s*- )([^@\n]*)(?:[ \t]+[^@\n ][^\s\n]*)*/,
     taskWithTags: /(?:.*- )(.*)/,
     indent: /^([ \t]*)(?:[^\s].*)/,
     tags: /(?:[^@\n]*[ \t]+)(@.*)/,
@@ -294,6 +294,11 @@ var TaskPaperNode = /** @class */ (function () {
     };
     TaskPaperNode.prototype.clone = function () {
         return new TaskPaperNode(this);
+    };
+    TaskPaperNode.prototype.parents = function () {
+        var _a;
+        var grandparents = ((_a = this.parent) === null || _a === void 0 ? void 0 : _a.parents()) || [];
+        return (this.parent === undefined || this.parent.type === "document") ? grandparents : grandparents.concat(this.parent);
     };
     TaskPaperNode.prototype.matches = function (nodeToMatch) {
         return (this.type === "task" &&
