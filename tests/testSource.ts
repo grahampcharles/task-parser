@@ -8,6 +8,14 @@ export const todoSimple = `Test Project 1:
 Test Project 2:
 \t- test item 4`;
 
+export const testDocumentWithMultipleSubprojects = `Today:
+\tSubProject 1:
+\t\t- task 
+\t\t- task
+
+\tSubproject 2:
+\t\t- task @done`;
+
 
 export const todoSpaceBetweenProjects = `Test Project 1:
 \tTask 1

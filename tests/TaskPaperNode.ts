@@ -13,7 +13,14 @@ import {
 import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";
-import { taskSimple, todoNoSpaceBetweenProjects, todoSimple, todoSingleProject, todoSpaceBetweenProjects } from "./testSource";
+import {
+    taskSimple,
+    testDocumentWithMultipleSubprojects,
+    todoNoSpaceBetweenProjects,
+    todoSimple,
+    todoSingleProject,
+    todoSpaceBetweenProjects,
+} from "./testSource";
 import { testLongSource } from "./testThreeProjectSource";
 
 // Reference:  RegEx tests run at:
@@ -99,8 +106,11 @@ describe("TaskPaperNode types, values", () => {
         expect(nodeIsNote("This is a note.")).to.equal(true);
         expect(nodeIsNote("    This is an indented note.")).to.equal(true);
         expect(nodeIsNote("\t\tThis is a tab-indented note.")).to.equal(true);
-        expect(nodeIsNote("1. Gielan, M. (2015). Broadcasting happiness: The science of igniting and sustaining positive change. ")).to.equal(true);
-        
+        expect(
+            nodeIsNote(
+                "1. Gielan, M. (2015). Broadcasting happiness: The science of igniting and sustaining positive change. "
+            )
+        ).to.equal(true);
     });
 
     it("node is Unknown", () => {
@@ -108,7 +118,9 @@ describe("TaskPaperNode types, values", () => {
         expect(getNodeType("\t\t")).to.equal("unknown");
         expect(getNodeType("  \t  \t")).to.equal("unknown");
         expect(getNodeType("                        ")).to.equal("unknown");
-        expect(getNodeType("        \nProject on Next Line:")).to.equal("unknown");        
+        expect(getNodeType("        \nProject on Next Line:")).to.equal(
+            "unknown"
+        );
     });
 
     it("getNodeType", () => {
@@ -180,9 +192,12 @@ describe("TaskPaperNode types, values", () => {
             getNodeValue("This is a note.\nThis is a second line.")
         ).to.equal("This is a note.");
 
-        expect(getNodeValue("Project With - Hyphens:")).to.equal("Project With - Hyphens");
-        expect(getNodeValue("Project With: Colons:")).to.equal("Project With: Colons");
-
+        expect(getNodeValue("Project With - Hyphens:")).to.equal(
+            "Project With - Hyphens"
+        );
+        expect(getNodeValue("Project With: Colons:")).to.equal(
+            "Project With: Colons"
+        );
     });
 
     it("getNodeTags", () => {
@@ -262,21 +277,21 @@ describe("TaskPaperNode parents", () => {
     it("no parent", () => {
         const task = new TaskPaperNode(taskSimple);
         const parents = task.parents();
-        expect (parents).lengthOf(0);
+        expect(parents).lengthOf(0);
     });
 
     it("just the document as parent", () => {
         const document = new TaskPaperNode(todoNoSpaceBetweenProjects);
         const project = document.children[0];
         const parents = project.parents();
-        expect (parents).lengthOf(0);
+        expect(parents).lengthOf(0);
     });
 
     it("project as parent", () => {
         const document = new TaskPaperNode(todoNoSpaceBetweenProjects);
         const project = document.children[0].children[0];
         const parents = project.parents();
-        expect (parents).lengthOf(1);
+        expect(parents).lengthOf(1);
     });
 
     it("first-level subproject", () => {
@@ -284,11 +299,16 @@ describe("TaskPaperNode parents", () => {
         const project = document.children[0].children[3];
         const task = project.children[0];
         const parents = task.parents();
-        expect (parents).to.have.length(2);
-        const parentNames = parents.map( ( node ) => node.value ).join(".");
-        expect (parentNames).to.equal("Test Project 1.Test SubProject 1");        
+        expect(parents).to.have.length(2);
+        const parentNames = parents.map((node) => node.value).join(".");
+        expect(parentNames).to.equal("Test Project 1.Test SubProject 1");
     });
 
+    it("multiple subprojects", () => {
+        const document = new TaskPaperNode(testDocumentWithMultipleSubprojects);
+        const project = document.children[0];
+        expect(project).to.have.property("children").of.length(2);
+    });
 });
 
 describe("TaskPaperNode parsing", () => {
@@ -477,28 +497,31 @@ describe("TaskPaperNode string conversion", () => {
 
     it("toString with children, include blank line", () => {
         const simple = new TaskPaperNode(todoSpaceBetweenProjects)
-            .toStringWithChildren(undefined, {blankLineAfterProject: true})
+            .toStringWithChildren(undefined, { blankLineAfterProject: true })
             .join(`\n`);
         const space = todoSpaceBetweenProjects;
         expect(simple).to.equal(todoSpaceBetweenProjects);
     });
 
     it("toString with children, only include blank line", () => {
-        const simple = new TaskPaperNode("Project 1:\n\tSubproject 1")
-            .toStringWithChildren(undefined, {blankLineAfterProject: true});
-        expect(simple.length).to.equal
+        const simple = new TaskPaperNode(
+            "Project 1:\n\tSubproject 1"
+        ).toStringWithChildren(undefined, { blankLineAfterProject: true });
+        expect(simple.length).to.equal;
     });
 
     it("toString with children, add blank line", () => {
         const simple = new TaskPaperNode(todoNoSpaceBetweenProjects)
-            .toStringWithChildren(undefined, {blankLineAfterProject: true})
+            .toStringWithChildren(undefined, { blankLineAfterProject: true })
             .join(`\n`);
         expect(simple).to.equal(todoSpaceBetweenProjects);
     });
 
     it("toString with children, remove blank line", () => {
         const node = new TaskPaperNode(todoSpaceBetweenProjects);
-        const results = node.toStringWithChildren(undefined, {blankLineAfterProject: false}).join(`\n`);
+        const results = node
+            .toStringWithChildren(undefined, { blankLineAfterProject: false })
+            .join(`\n`);
         const expectation = todoNoSpaceBetweenProjects;
         expect(results).to.equal(expectation);
     });
@@ -506,7 +529,7 @@ describe("TaskPaperNode string conversion", () => {
     it("toString single project", () => {
         const singleProjectNode = new TaskPaperNode(todoSingleProject);
         const results = singleProjectNode.toStringWithChildren().join(`\n`);
-        const expectation= todoSingleProject ;
+        const expectation = todoSingleProject;
         expect(results).to.equal(expectation);
     });
 

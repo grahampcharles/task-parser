@@ -179,10 +179,10 @@ export class TaskPaperNode {
                     );
 
                     // Stop adding children if we've moved to a sibling or parent of the tree.
-                    // Notes nodes are always children of whatever is immediately above them
-                    // regardless of indentation level.
+                    // Notes and unknown nodes are always children of
+                    // whatever is immediately above them, regardless of indentation level.
                     if (
-                        newNode.type !== "note" &&
+                        !["note", "unknown"].includes(newNode.type) &&
                         newNode.depth <= this.depth
                     ) {
                         break;
@@ -355,7 +355,9 @@ export class TaskPaperNode {
 
     parents(): TaskPaperNode[] {
         const grandparents = this.parent?.parents() || [];
-        return (this.parent === undefined || this.parent.type==="document") ? grandparents : grandparents.concat(this.parent);
+        return this.parent === undefined || this.parent.type === "document"
+            ? grandparents
+            : grandparents.concat(this.parent);
     }
 
     private matches(nodeToMatch: TaskPaperNode): boolean {
