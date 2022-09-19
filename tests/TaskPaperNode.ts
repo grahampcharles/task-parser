@@ -22,8 +22,8 @@ import {
     todoSingleProject,
     todoSpaceBetweenProjects,
 } from "./testSource";
-import { testLongSource } from "./testThreeProjectSource";
-import { testRealWorldSource } from "./testRealWorldSource";
+import { testSourceLong } from "./testSourceLong";
+import { testRealWorldSource } from "./testSourceRealWorld";
 
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
@@ -466,18 +466,18 @@ describe("TaskPaperNode parsing", () => {
     });
 
     it("three-project document", () => {
-        const longishDocument = new TaskPaperNode(testLongSource);
+        const longDocument = new TaskPaperNode(testSourceLong);
 
-        expect(longishDocument.children).to.have.lengthOf(3);
-        expect(longishDocument).to.have.nested.property(
+        expect(longDocument.children).to.have.lengthOf(3);
+        expect(longDocument).to.have.nested.property(
             "children[1].children[2].value",
             "item #4"
         );
-        expect(longishDocument).to.have.nested.property(
+        expect(longDocument).to.have.nested.property(
             "children[1].children[3].tags[1].value",
             "2022-11-01"
         );
-        expect(longishDocument).to.have.nested.property(
+        expect(longDocument).to.have.nested.property(
             "children[1].children[4].tags[0].tag",
             "recur"
         );

@@ -1,7 +1,8 @@
+## 1.2.3
+Performance improvement on long files.
+
 ## 1.2.2
-
 Added parents() method.
-
 
 ## 1.2.1
 

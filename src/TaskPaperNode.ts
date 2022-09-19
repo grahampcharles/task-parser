@@ -173,20 +173,26 @@ export class TaskPaperNode {
                     index < lines.length;
                     index++
                 ) {
-                    const newNode = new TaskPaperNode(
-                        lines.slice(index).join("\n"),
-                        lineNumber + index + (1 - firstChildLine) // 1-based line numbering
-                    );
+
+                    // examine depth and type of next node
+                    const depth = getNodeDepth(lines[index]);
+                    const type = getNodeType(lines[index]);
 
                     // Stop adding children if we've moved to a sibling or parent of the tree.
                     // Notes and unknown nodes are always children of
                     // whatever is immediately above them, regardless of indentation level.
                     if (
-                        !["note", "unknown"].includes(newNode.type) &&
-                        newNode.depth <= this.depth
+                        !["note", "unknown"].includes(type) &&
+                        depth <= this.depth
                     ) {
                         break;
                     }
+
+                    // get the child node
+                    const newNode = new TaskPaperNode(
+                        lines.slice(index).join("\n") ,
+                        lineNumber + index + (1 - firstChildLine) // 1-based line numbering
+                    );
 
                     // push child onto stack, ignoring unknowns (which is whitespace)
                     if (newNode.type !== "unknown") {

@@ -1,4 +1,4 @@
-export const testLongSource = `Today:
+export const testSourceLong = `Today:
 	- item #1 @recur(2) @due(2022-01-18)
 	- item #2 @recur(2) @due(2022-01-18)
 	- a due item @due(2022-01-13)
