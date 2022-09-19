@@ -153,9 +153,9 @@ var TaskPaperNode = /** @class */ (function () {
                     var newNode = new TaskPaperNode(lines.slice(index).join("\n"), lineNumber + index + (1 - firstChildLine) // 1-based line numbering
                     );
                     // Stop adding children if we've moved to a sibling or parent of the tree.
-                    // Notes nodes are always children of whatever is immediately above them
-                    // regardless of indentation level.
-                    if (newNode.type !== "note" &&
+                    // Notes and unknown nodes are always children of
+                    // whatever is immediately above them, regardless of indentation level.
+                    if (!["note", "unknown"].includes(newNode.type) &&
                         newNode.depth <= this.depth) {
                         break;
                     }
@@ -298,7 +298,9 @@ var TaskPaperNode = /** @class */ (function () {
     TaskPaperNode.prototype.parents = function () {
         var _a;
         var grandparents = ((_a = this.parent) === null || _a === void 0 ? void 0 : _a.parents()) || [];
-        return (this.parent === undefined || this.parent.type === "document") ? grandparents : grandparents.concat(this.parent);
+        return this.parent === undefined || this.parent.type === "document"
+            ? grandparents
+            : grandparents.concat(this.parent);
     };
     TaskPaperNode.prototype.matches = function (nodeToMatch) {
         return (this.type === "task" &&

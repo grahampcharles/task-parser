@@ -10,6 +10,7 @@ import {
     nodeIsTask,
     TaskPaperNode,
 } from "../src/TaskPaperNode";
+import { parseTaskPaper } from "../src/index";
 import { expect } from "chai";
 import "mocha";
 import { it } from "mocha";
@@ -22,6 +23,7 @@ import {
     todoSpaceBetweenProjects,
 } from "./testSource";
 import { testLongSource } from "./testThreeProjectSource";
+import { testRealWorldSource } from "./testRealWorldSource";
 
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
@@ -270,6 +272,13 @@ describe("TaskPaperNode parent parsing", () => {
         const firstItem = simpleDocument.children[0];
         expect(firstItem).to.have.nested.property("parent.value").that.is
             .undefined;
+    });
+});
+
+describe("Real World task source", () => {
+    it("parse document", () => {
+        const document = new TaskPaperNode(testRealWorldSource);
+        expect(document.type).to.equal("document");
     });
 });
 
@@ -538,5 +547,10 @@ describe("TaskPaperNode string conversion", () => {
         const results = multipleProjectNode.toStringWithChildren().join(`\n`);
         const expectation = `${todoSimple}\n`;
         expect(results).to.equal(expectation);
+    });
+
+    it("parseTaskPaper", () => {
+        const document = parseTaskPaper(todoSimple);
+        expect(document).to.have.property("type").eq("document");
     });
 });
