@@ -173,7 +173,6 @@ export class TaskPaperNode {
                     index < lines.length;
                     index++
                 ) {
-
                     // examine depth and type of next node
                     const depth = getNodeDepth(lines[index]);
                     const type = getNodeType(lines[index]);
@@ -182,23 +181,22 @@ export class TaskPaperNode {
                     // Notes and unknown nodes are always children of
                     // whatever is immediately above them, regardless of indentation level.
                     if (
-                        !["note", "unknown"].includes(type) &&
-                        depth <= this.depth
+                        (!["note", "unknown"].includes(type) &&
+                            depth <= this.depth) ||
+                        ["note", "unknown"].includes(this.type)
                     ) {
                         break;
                     }
 
                     // get the child node
                     const newNode = new TaskPaperNode(
-                        lines.slice(index).join("\n") ,
+                        lines.slice(index).join("\n"),
                         lineNumber + index + (1 - firstChildLine) // 1-based line numbering
                     );
 
-                    // push child onto stack, ignoring unknowns (which is whitespace)
-                    if (newNode.type !== "unknown") {
-                        newNode.parent = this;
-                        this.children.push(newNode);
-                    }
+                    // push child onto stack
+                    newNode.parent = this;
+                    this.children.push(newNode);
 
                     // update index to account for any consumed children
                     index = index + newNode.lineCount() - 1;
@@ -299,6 +297,14 @@ export class TaskPaperNode {
                 results.push("");
             }
         }
+
+        // remove trailing blank line if requested
+        if (!options.blankLineAfterProject && this.type === "project") {
+            if (results[results.length - 1] === "") {
+                results.pop();
+            }
+        }
+
         return results;
     }
 

@@ -75,7 +75,7 @@ describe("Notes Parsing", () => {
         const lengths = [1, 1, 1, 2, 2, 1];
 
         lengths.forEach((value, index) => {
-            expect(theProject.children[index].children.length).to.equal(value);
+            expect(theProject.children[index].children.length).to.equal(value, `error index: ${index}`);
         });
     });
 });

@@ -258,3 +258,28 @@ Settings:
     overdueSection=true
     addTodayTomorrowOverdueTags=true
 `;
+
+export const testTwolevelSubprojectsSimple = `Project Name:
+\tSubproject 1:
+\t\tSubsubproject 1-1:
+\t\t\t- 1. Task 1-1-1
+\t\tSubsubproject 1-2:
+\t\t\t- 1. Task 1-2-1
+`;
+
+
+export const testTwolevelSubprojects = `Project Name:
+\tSubproject 1:
+\t\tSubsubproject 1-1:
+\t\t\t- 1. Task 1-1-1
+
+\t\tSubsubproject 1-2:
+\t\t\t- 1. Task 1-2-1
+\t\t\t- 2. Task 1-2-2 With Notes
+\t\t\t\tHere's one line of notes
+\t\t\t\tHere's another line of notes
+\t\t\t\tHere's a third line of notes
+\t\t\t- 3. Task 1-2-2 With Notes
+\t\t\t\tNotes line 1
+\t\t\t\tNotes line 2
+`;

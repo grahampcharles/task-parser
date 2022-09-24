@@ -150,20 +150,23 @@ var TaskPaperNode = /** @class */ (function () {
             // so step through and add all children
             if (["document", "project", "task"].includes(this.type)) {
                 for (var index = firstChildLine; index < lines.length; index++) {
-                    var newNode = new TaskPaperNode(lines.slice(index).join("\n"), lineNumber + index + (1 - firstChildLine) // 1-based line numbering
-                    );
+                    // examine depth and type of next node
+                    var depth = getNodeDepth(lines[index]);
+                    var type = getNodeType(lines[index]);
                     // Stop adding children if we've moved to a sibling or parent of the tree.
                     // Notes and unknown nodes are always children of
                     // whatever is immediately above them, regardless of indentation level.
-                    if (!["note", "unknown"].includes(newNode.type) &&
-                        newNode.depth <= this.depth) {
+                    if ((!["note", "unknown"].includes(type) &&
+                        depth <= this.depth) ||
+                        ["note", "unknown"].includes(this.type)) {
                         break;
                     }
-                    // push child onto stack, ignoring unknowns (which is whitespace)
-                    if (newNode.type !== "unknown") {
-                        newNode.parent = this;
-                        this.children.push(newNode);
-                    }
+                    // get the child node
+                    var newNode = new TaskPaperNode(lines.slice(index).join("\n"), lineNumber + index + (1 - firstChildLine) // 1-based line numbering
+                    );
+                    // push child onto stack
+                    newNode.parent = this;
+                    this.children.push(newNode);
                     // update index to account for any consumed children
                     index = index + newNode.lineCount() - 1;
                 }
@@ -239,6 +242,12 @@ var TaskPaperNode = /** @class */ (function () {
         if (options.blankLineAfterProject && this.type === "project") {
             if (results[results.length - 1] !== "") {
                 results.push("");
+            }
+        }
+        // remove trailing blank line if requested
+        if (!options.blankLineAfterProject && this.type === "project") {
+            if (results[results.length - 1] === "") {
+                results.pop();
             }
         }
         return results;

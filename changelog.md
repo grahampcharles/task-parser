@@ -1,3 +1,6 @@
+## 1.2.5
+Bugfixes for complex files.
+
 ## 1.2.3
 Performance improvement on long files.
 

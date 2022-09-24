@@ -52,5 +52,4 @@ Non-indented note, single line.
 Differently indented note, 
 \t\t\tmultiple lines.
 \t- test item 6
-\tNote with a colon inside: this is a thing!
-`;
+\tNote with a colon inside: this is a thing!`;

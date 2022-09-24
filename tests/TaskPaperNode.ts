@@ -23,7 +23,12 @@ import {
     todoSpaceBetweenProjects,
 } from "./testSource";
 import { testSourceLong } from "./testSourceLong";
-import { testRealWorldSource } from "./testSourceRealWorld";
+import {
+    testRealWorldSource,
+    testTwolevelSubprojects,
+    testTwolevelSubprojectsSimple,
+} from "./testSourceRealWorld";
+import { ifError } from "assert";
 
 // Reference:  RegEx tests run at:
 // Project: https://regex101.com/r/6wdHCZ/2
@@ -547,6 +552,40 @@ describe("TaskPaperNode string conversion", () => {
         const results = multipleProjectNode.toStringWithChildren().join(`\n`);
         const expectation = `${todoSimple}\n`;
         expect(results).to.equal(expectation);
+    });
+
+    it("two-level subprojects, simple", () => {
+        const document = new TaskPaperNode(testTwolevelSubprojectsSimple);
+        const project = document.children[0];
+        const subProject = project.children[0];
+        const subsubProject1 = subProject.children[0];
+        const subsubProject2 = subProject.children[1];
+
+        expect(document.children).to.have.lengthOf(1, "document");
+        expect(project.children).to.have.lengthOf(1, "project");
+        expect(subProject.children).to.have.lengthOf(
+            2,
+            `subProject: ${subProject.children.length}`
+        );
+        expect(subsubProject1.children).to.have.lengthOf(1, "subsubProject1");
+        expect(subsubProject2.children).to.have.lengthOf(1, "subsubProject2");
+    });
+
+    it("two-level subprojects, complex", () => {
+        const document = new TaskPaperNode(testTwolevelSubprojects);
+        const project = document.children[0];
+        const subProject = project.children[0];
+        const subsubProject1 = subProject.children[0];
+        const subsubProject2 = subProject.children[1];
+
+        expect(document.children).to.have.lengthOf(1, "document");
+        expect(project.children).to.have.lengthOf(1, "project");
+        expect(subProject.children).to.have.lengthOf(
+            2,
+            `subProject: ${subProject.children.length}`
+        );
+        expect(subsubProject1.children).to.have.lengthOf(1, "subsubProject1");
+        expect(subsubProject2.children).to.have.lengthOf(3, "subsubProject2");
     });
 
     it("parseTaskPaper", () => {
