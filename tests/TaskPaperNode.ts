@@ -24,6 +24,7 @@ import {
 } from "./testSource";
 import { testSourceLong } from "./testSourceLong";
 import {
+    testMultilineNotes,
     testRealWorldSource,
     testTwolevelSubprojects,
     testTwolevelSubprojectsSimple,
@@ -358,7 +359,7 @@ describe("TaskPaperNode parsing", () => {
         );
         expect(simpleDocument).to.have.nested.property(
             "children[1].index.line",
-            8
+            7
         );
 
         expect(simpleDocument).to.have.nested.property(
@@ -510,11 +511,13 @@ describe("TaskPaperNode string conversion", () => {
     });
 
     it("toString with children, include blank line", () => {
-        const simple = new TaskPaperNode(todoSpaceBetweenProjects)
-            .toStringWithChildren(undefined, { blankLineAfterProject: true })
-            .join(`\n`);
-        const space = todoSpaceBetweenProjects;
-        expect(simple).to.equal(todoSpaceBetweenProjects);
+        const node = new TaskPaperNode(todoSpaceBetweenProjects);
+        const simple = node.toStringWithChildren(undefined, {
+            blankLineAfterProject: true,
+        });
+        const simpleLines = simple.join(`\n`);
+        const expected = todoSpaceBetweenProjects;
+        expect(simpleLines).to.equal(expected);
     });
 
     it("toString with children, only include blank line", () => {
@@ -543,14 +546,14 @@ describe("TaskPaperNode string conversion", () => {
     it("toString single project", () => {
         const singleProjectNode = new TaskPaperNode(todoSingleProject);
         const results = singleProjectNode.toStringWithChildren().join(`\n`);
-        const expectation = todoSingleProject;
+        const expectation = todoSingleProject.trimEnd();
         expect(results).to.equal(expectation);
     });
 
     it("toString multiple projects", () => {
         const multipleProjectNode = new TaskPaperNode(todoSimple);
         const results = multipleProjectNode.toStringWithChildren().join(`\n`);
-        const expectation = `${todoSimple}\n`;
+        const expectation = todoSimple;
         expect(results).to.equal(expectation);
     });
 
@@ -586,6 +589,31 @@ describe("TaskPaperNode string conversion", () => {
         );
         expect(subsubProject1.children).to.have.lengthOf(1, "subsubProject1");
         expect(subsubProject2.children).to.have.lengthOf(3, "subsubProject2");
+    });
+
+    it("notes", () => {
+        const document = new TaskPaperNode(testMultilineNotes);
+        const project = document.children[0];
+
+        expect(document.children).to.have.lengthOf(1, "document");
+        expect(project.children).to.have.lengthOf(2, "project");
+    });
+
+    it("line count", () => {
+        const doc1 = new TaskPaperNode(`Project:\n\t-Task`);
+        const lineCount1 = doc1.children[0].lineCount();
+        expect(lineCount1).to.equal(2);
+        const doc2 = new TaskPaperNode(`Project:\n\t-task\n\n\t- task`);
+        const lineCount2 = doc2.children[0].lineCount();
+        expect(lineCount2).to.equal(3);
+
+        const doc3 = new TaskPaperNode(testTwolevelSubprojects);
+        const lineCount3 = doc3.children[0].lineCount();
+        expect(lineCount3).to.equal(13);
+
+        const lineCount4 = doc3.children[0].children[0].lineCount();
+        expect(lineCount4).to.equal(12);
+
     });
 
     it("parseTaskPaper", () => {

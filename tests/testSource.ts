@@ -21,8 +21,7 @@ export const todoSpaceBetweenProjects = `Test Project 1:
 \tTask 1
 
 Test Project 2:
-\tTask 2
-`;
+\tTask 2`;
 
 export const todoNoSpaceBetweenProjects = `Test Project 1:
 \tTask 1

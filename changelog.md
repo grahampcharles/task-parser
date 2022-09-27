@@ -1,3 +1,6 @@
+## 1.2.6
+All bugs seem related to the presence of whitespace lines; just stripping them out now.
+
 ## 1.2.5
 Bugfixes for complex files.
 

@@ -267,7 +267,6 @@ export const testTwolevelSubprojectsSimple = `Project Name:
 \t\t\t- 1. Task 1-2-1
 `;
 
-
 export const testTwolevelSubprojects = `Project Name:
 \tSubproject 1:
 \t\tSubsubproject 1-1:
@@ -283,3 +282,12 @@ export const testTwolevelSubprojects = `Project Name:
 \t\t\t\tNotes line 1
 \t\t\t\tNotes line 2
 `;
+
+export const testMultilineNotes = `Project 1:
+\tSubproject 1:
+\t\t- Task 1-1-1
+\tSubproject 2:
+\t\tSubProject 2-1:
+\t\t\t- Task 2-2-1 With Notes
+\t\t\t\tNotes line 1
+\t\t\t\tNotes line 2`;

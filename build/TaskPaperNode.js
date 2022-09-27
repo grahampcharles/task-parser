@@ -124,41 +124,59 @@ var TaskPaperNode = /** @class */ (function () {
     function TaskPaperNode(input, lineNumber) {
         if (lineNumber === void 0) { lineNumber = 0; }
         var _a;
+        this.type = "unknown";
         this.children = new Array();
+        this.depth = 0;
+        this.index = { line: 0, column: 0 };
         if (typeof input === "string") {
-            //// split into children
-            var lines = (0, strings_1.splitLines)(input);
+            //// split into children, removing empty lines
+            //const lines = splitLines(input.trimEnd());
+            var lines = (0, strings_1.removeEmptyElements)((0, strings_1.splitLines)(input));
+            //// skip all blank lines
+            var firstNonBlankIndex = 0; // temp
+            // const firstNonBlankIndex = firstNonBlank(lines);
+            // if (firstNonBlankIndex === -1) {
+            //     // no non-blank lines left
+            //     return;
+            // }
             //// get node type
             // special case: if this is line 0 of a multi-line node, it's a document
             if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
                 this.type = "document";
             }
             else {
-                this.type = getNodeType(lines[0]);
+                this.type = getNodeType(lines[firstNonBlankIndex]);
             }
             // first line of this node's inner content
-            var firstChildLine = this.type === "document" ? 0 : 1;
-            // set property values, depending on type
-            this.depth = this.type === "document" ? 0 : getNodeDepth(input);
-            this.tags = ["project", "task"].includes(this.type)
-                ? getTagValueArray(input)
-                : undefined;
-            this.value =
-                this.type !== "document" ? getNodeValue(input) : undefined;
-            this.index = { line: lineNumber, column: 0 };
+            var firstChildLine = this.type === "document" ? 0 : firstNonBlankIndex + 1;
+            // set property values
+            if (this.type !== "document") {
+                this.depth = getNodeDepth(lines[firstNonBlankIndex]);
+                this.tags = ["project", "task"].includes(this.type)
+                    ? getTagValueArray(lines[firstNonBlankIndex])
+                    : undefined;
+                this.value = getNodeValue(lines[firstNonBlankIndex]);
+                this.index = {
+                    line: lineNumber + firstNonBlankIndex,
+                    column: 0,
+                };
+            }
             // DOCUMENT or PROJECT or TASK node types can contain children,
             // so step through and add all children
             if (["document", "project", "task"].includes(this.type)) {
                 for (var index = firstChildLine; index < lines.length; index++) {
+                    // // skip any blanks
+                    // if (isWhiteSpace(lines[index])) {
+                    //     continue;
+                    // }
                     // examine depth and type of next node
                     var depth = getNodeDepth(lines[index]);
                     var type = getNodeType(lines[index]);
                     // Stop adding children if we've moved to a sibling or parent of the tree.
-                    // Notes and unknown nodes are always children of
+                    // Notes are always children of
                     // whatever is immediately above them, regardless of indentation level.
-                    if ((!["note", "unknown"].includes(type) &&
-                        depth <= this.depth) ||
-                        ["note", "unknown"].includes(this.type)) {
+                    if ((!["note"].includes(type) && depth <= this.depth) ||
+                        ["note"].includes(this.type)) {
                         break;
                     }
                     // get the child node
@@ -237,18 +255,16 @@ var TaskPaperNode = /** @class */ (function () {
         (_a = this.children) === null || _a === void 0 ? void 0 : _a.forEach(function (child) {
             results.push.apply(results, child.toStringWithChildren(exceptTags, options));
         });
-        // add a blank line to projects if requested;
+        // add a blank line to top-level projects if requested;
         // do not double-add blank lines
-        if (options.blankLineAfterProject && this.type === "project") {
-            if (results[results.length - 1] !== "") {
-                results.push("");
-            }
+        if (options.blankLineAfterProject &&
+            this.type === "project" &&
+            this.depth === 1) {
+            results.push("");
         }
-        // remove trailing blank line if requested
-        if (!options.blankLineAfterProject && this.type === "project") {
-            if (results[results.length - 1] === "") {
-                results.pop();
-            }
+        if (options.blankLineAfterProject && this.type === "document") {
+            // remove document last blank line
+            results.pop();
         }
         return results;
     };
