@@ -153,7 +153,7 @@ export class TaskPaperNode {
             const lines = removeEmptyElements(splitLines(input));
 
             //// skip all blank lines
-            const firstNonBlankIndex = 0;       // temp
+            const firstNonBlankIndex = 0; // temp
             // const firstNonBlankIndex = firstNonBlank(lines);
             // if (firstNonBlankIndex === -1) {
             //     // no non-blank lines left
@@ -164,7 +164,7 @@ export class TaskPaperNode {
             // special case: if this is line 0 of a multi-line node, it's a document
             if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
                 this.type = "document";
-            } else {
+            } else if (lines.length > 0) {
                 this.type = getNodeType(lines[firstNonBlankIndex]);
             }
 
@@ -173,7 +173,7 @@ export class TaskPaperNode {
                 this.type === "document" ? 0 : firstNonBlankIndex + 1;
 
             // set property values
-            if (this.type !== "document") {
+            if (!["document", "unknown"].includes(this.type)) {
                 this.depth = getNodeDepth(lines[firstNonBlankIndex]);
                 this.tags = ["project", "task"].includes(this.type)
                     ? getTagValueArray(lines[firstNonBlankIndex])

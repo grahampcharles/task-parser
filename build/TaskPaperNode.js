@@ -144,13 +144,13 @@ var TaskPaperNode = /** @class */ (function () {
             if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
                 this.type = "document";
             }
-            else {
+            else if (lines.length > 0) {
                 this.type = getNodeType(lines[firstNonBlankIndex]);
             }
             // first line of this node's inner content
             var firstChildLine = this.type === "document" ? 0 : firstNonBlankIndex + 1;
             // set property values
-            if (this.type !== "document") {
+            if (!["document", "unknown"].includes(this.type)) {
                 this.depth = getNodeDepth(lines[firstNonBlankIndex]);
                 this.tags = ["project", "task"].includes(this.type)
                     ? getTagValueArray(lines[firstNonBlankIndex])

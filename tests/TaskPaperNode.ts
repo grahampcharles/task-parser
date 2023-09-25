@@ -325,8 +325,14 @@ describe("TaskPaperNode parents", () => {
         expect(project).to.have.property("children").of.length(2);
     });
 });
-
 describe("TaskPaperNode parsing", () => {
+
+    it("empty node", () => {
+        const emptyNode = new TaskPaperNode("");
+        expect(emptyNode).to.have.property("type", "unknown");
+    });
+
+
     it("single task", () => {
         const singleTask = new TaskPaperNode(taskSimple);
         expect(singleTask).to.have.property("type", "task");

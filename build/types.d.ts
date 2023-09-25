@@ -1,4 +1,4 @@
-export declare type TaskPaperIndex = {
+export type TaskPaperIndex = {
     line: number;
     column: number;
 };
