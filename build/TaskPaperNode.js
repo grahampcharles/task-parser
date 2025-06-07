@@ -1,6 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.TaskPaperNode = exports.nodeIsNote = exports.nodeIsTask = exports.nodeIsRootProject = exports.nodeIsProject = exports.getNodeType = exports.getNodeDepth = exports.getNodeValue = exports.getNodeTags = exports.getTagValueArray = void 0;
+exports.TaskPaperNode = void 0;
+exports.getTagValueArray = getTagValueArray;
+exports.getNodeTags = getNodeTags;
+exports.getNodeValue = getNodeValue;
+exports.getNodeDepth = getNodeDepth;
+exports.getNodeType = getNodeType;
+exports.nodeIsProject = nodeIsProject;
+exports.nodeIsRootProject = nodeIsRootProject;
+exports.nodeIsTask = nodeIsTask;
+exports.nodeIsNote = nodeIsNote;
 var strings_1 = require("./strings");
 var TagWithValue_1 = require("./TagWithValue");
 var defaultToStringOptions = {
@@ -23,7 +32,6 @@ function getTagValueArray(input) {
         .map(function (tag) { return new TagWithValue_1.TagWithValue(tag); })
         .filter(function (tagWithValue) { return tagWithValue.tag.length > 0; });
 }
-exports.getTagValueArray = getTagValueArray;
 /*
  * Extract tag string from a node string.
  */
@@ -33,7 +41,6 @@ function getNodeTags(input) {
     }
     return "";
 }
-exports.getNodeTags = getNodeTags;
 /*
  * Extract value from a node string.
  */
@@ -56,14 +63,12 @@ function getNodeValue(input) {
     }
     return "";
 }
-exports.getNodeValue = getNodeValue;
 /*
  * Extract depth from a node string.
  */
 function getNodeDepth(input) {
     return (Math.floor((input.match(nodePatternMatches.indent) || ["", ""])[1].replace(/\t/g, "  ").length / 2) + 1);
 }
-exports.getNodeDepth = getNodeDepth;
 /*
  * Compute type from a node string.
  */
@@ -77,7 +82,6 @@ function getNodeType(input) {
         return "note";
     return "unknown";
 }
-exports.getNodeType = getNodeType;
 /*
  * Determine if node is a project.
  */
@@ -91,7 +95,6 @@ function nodeIsProject(input) {
         ? false
         : true;
 }
-exports.nodeIsProject = nodeIsProject;
 /*
  * Determine if node is a top-level project.
  */
@@ -100,7 +103,6 @@ function nodeIsRootProject(input) {
     // document and task are precedent
     return nodeIsProject(theFirstLine) && getNodeDepth(theFirstLine) === 1;
 }
-exports.nodeIsRootProject = nodeIsRootProject;
 /*
  * Determine if node is a task.
  */
@@ -108,7 +110,6 @@ function nodeIsTask(input) {
     var theFirstLine = (0, strings_1.firstLine)(input);
     return theFirstLine.match(nodePatternMatches.task) === null ? false : true;
 }
-exports.nodeIsTask = nodeIsTask;
 /*
  * Determine if node is a note.
  */
@@ -119,7 +120,6 @@ function nodeIsNote(input) {
     }
     return !(nodeIsProject(theFirstLine) || nodeIsTask(theFirstLine));
 }
-exports.nodeIsNote = nodeIsNote;
 var TaskPaperNode = /** @class */ (function () {
     function TaskPaperNode(input, lineNumber) {
         if (lineNumber === void 0) { lineNumber = 0; }

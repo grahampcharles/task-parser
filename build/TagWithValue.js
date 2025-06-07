@@ -11,7 +11,7 @@ var TagWithValue = /** @class */ (function () {
         // match tag(value) or tag or tag()
         var patternMatch = new RegExp(/^(?:[ \t]*)(.*?)(?:[ \t]*)(?:\((.*)\))?(?:[ \t]*)$/gm).exec(tag) || [
             undefined,
-            tag,
+            tag, // default to the whole tag if the regexp chokes
             undefined,
         ];
         this.tag = patternMatch[1] || tag.trim();
