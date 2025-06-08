@@ -36,3 +36,4 @@ export declare class TaskPaperNode {
     parents(): TaskPaperNode[];
     private matches;
 }
+//# sourceMappingURL=TaskPaperNode.d.ts.map

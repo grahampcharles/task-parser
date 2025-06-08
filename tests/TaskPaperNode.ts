@@ -276,8 +276,8 @@ describe("TaskPaperNode parent parsing", () => {
 
         // top-level project should have undefined value (it's the document)
         const firstItem = simpleDocument.children[0];
-        expect(firstItem).to.have.nested.property("parent.value").that.is
-            .undefined;
+        expect(firstItem.parent).to.exist;
+        expect(firstItem.parent?.value).to.be.undefined;
     });
 });
 

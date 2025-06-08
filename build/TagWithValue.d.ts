@@ -4,3 +4,4 @@ export declare class TagWithValue {
     constructor(tag: string, value?: string);
     toString(): string;
 }
+//# sourceMappingURL=TagWithValue.d.ts.map

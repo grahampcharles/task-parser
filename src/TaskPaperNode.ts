@@ -2,8 +2,6 @@ import {
     splitLines,
     firstLine,
     removeEmptyElements,
-    isWhiteSpace,
-    firstNonBlank,
 } from "./strings";
 import { TagWithValue } from "./TagWithValue";
 import { TaskPaperNodeType } from "./TaskPaperNodeType";
@@ -147,20 +145,22 @@ export class TaskPaperNode {
     parent: TaskPaperNode | undefined;
 
     constructor(input: string | TaskPaperNode, lineNumber: number = 0) {
+        this.parent = undefined; // Ensure root-level node explicitly has parent set
+        
         if (typeof input === "string") {
-            //// split into children, removing empty lines
+            /// split into children, removing empty lines
             //const lines = splitLines(input.trimEnd());
             const lines = removeEmptyElements(splitLines(input));
 
-            //// skip all blank lines
+            /// skip all blank lines
             const firstNonBlankIndex = 0; // temp
             // const firstNonBlankIndex = firstNonBlank(lines);
             // if (firstNonBlankIndex === -1) {
-            //     // no non-blank lines left
+            // no non-blank lines left
             //     return;
             // }
 
-            //// get node type
+            /// get node type
             // special case: if this is line 0 of a multi-line node, it's a document
             if (lineNumber === 0 && /\r|\n/.exec(input) !== null) {
                 this.type = "document";
@@ -193,7 +193,7 @@ export class TaskPaperNode {
                     index < lines.length;
                     index++
                 ) {
-                    // // skip any blanks
+                    // skip any blanks
                     // if (isWhiteSpace(lines[index])) {
                     //     continue;
                     // }

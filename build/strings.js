@@ -15,7 +15,7 @@ function normalizeLineFeeds(input) {
     return input.replace(/\r\n/gm, "\n").replace(/\r/gm, "\n");
 }
 function removeEmptyElements(input) {
-    return input.filter(function (line) {
+    return input.filter((line) => {
         return !isWhiteSpace(line); // returns true on any non-whitespace found
     });
 }
@@ -23,5 +23,5 @@ function isWhiteSpace(input) {
     return !/\S/.test(input);
 }
 function firstNonBlank(input) {
-    return input.findIndex(function (line) { return !isWhiteSpace(line); });
+    return input.findIndex((line) => !isWhiteSpace(line));
 }

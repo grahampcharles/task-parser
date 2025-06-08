@@ -1,34 +1,37 @@
 {
     "name": "task-parser",
-    "version": "1.2.6",
+    "version": "1.2.8",
     "description": "A task parser.",
     "main": "build/index.js",
-    "types": "build/types.js",
-    "scripts": {
-        "build": "rimraf './build' && tsc --declaration",
-        "start": "npm run build && ts-node 'build/index.js'",
-        "dev": "nodemon",
-        "test": "mocha -r ts-node/register 'tests/**/*.ts'"
+    "types": "build/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./build/index.js",
+            "require": "./build/index.js"
+        }
     },
     "files": [
         "build/**/*"
     ],
+    "scripts": {
+        "build": "rimraf build && tsc --declaration",
+        "start": "npm run build && node build/index.js",
+        "dev": "nodemon --watch src --exec \"npm run build\"",
+        "test": "mocha -r ts-node/register tests/**/*.ts"
+    },
     "author": "grahampcharles",
     "license": "ISC",
     "devDependencies": {
-        "@types/chai": "^4.3.6",
-        "@types/mocha": "^9.1.1",
-        "@types/node": "^17.0.45",
-        "chai": "^4.3.8",
+        "@types/chai": "^5.2.2",
+        "@types/mocha": "^10.0.10",
+        "@types/node": "^20.9.0",
+        "chai": "^5.2.0",
+        "glob": "^10.4.5",
         "mocha": "^11.5.0",
         "nodemon": "^3.1.10",
         "nyc": "^15.1.0",
         "rimraf": "^6.0.1",
         "ts-node": "^10.9.1",
-        "typescript": "^5.2.2"
-    },
-    "mocha.files.glob": "tests/**/*.ts",
-    "mocha.requires": [
-        "ts-node/register"
-    ]
+        "typescript": "^5.4.5"
+    }
 }

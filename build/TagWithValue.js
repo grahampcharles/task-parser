@@ -1,15 +1,15 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TagWithValue = void 0;
-var TagWithValue = /** @class */ (function () {
-    function TagWithValue(tag, value) {
+class TagWithValue {
+    constructor(tag, value) {
         if (value !== undefined) {
             this.tag = tag;
             this.value = value;
             return;
         }
         // match tag(value) or tag or tag()
-        var patternMatch = new RegExp(/^(?:[ \t]*)(.*?)(?:[ \t]*)(?:\((.*)\))?(?:[ \t]*)$/gm).exec(tag) || [
+        const patternMatch = new RegExp(/^(?:[ \t]*)(.*?)(?:[ \t]*)(?:\((.*)\))?(?:[ \t]*)$/gm).exec(tag) || [
             undefined,
             tag, // default to the whole tag if the regexp chokes
             undefined,
@@ -17,12 +17,11 @@ var TagWithValue = /** @class */ (function () {
         this.tag = patternMatch[1] || tag.trim();
         this.value = patternMatch[2] || undefined;
     }
-    TagWithValue.prototype.toString = function () {
+    toString() {
         if (this.value === undefined) {
-            return "@".concat(this.tag);
+            return `@${this.tag}`;
         }
-        return "@".concat(this.tag, "(").concat(this.value, ")");
-    };
-    return TagWithValue;
-}());
+        return `@${this.tag}(${this.value})`;
+    }
+}
 exports.TagWithValue = TagWithValue;
